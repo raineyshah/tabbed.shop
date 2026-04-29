@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Tabbed Shop",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/uvicorn_config.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "env": {
+                "VIRTUAL_ENV": "${workspaceFolder}/.venv",
+                "PATH": "${workspaceFolder}/.venv/bin:${env:PATH}"
+            },
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

@@ -1,0 +1,27 @@
+.env
+.oem
+
+# Python virtual environments (any name / location)
+.venv/
+venv/
+env/
+ENV/
+virtualenv/
+.pvenv/
+pipenv/
+
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/
+
+# Local / host-only data
+*.db
+*.pem
+
+# Content dirs (do not track)
+products/
+templates/
+uploads/
+brands/
+certifications/

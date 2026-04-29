@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 500" width="1500" height="500">
+  <defs>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6EC8FF"/>
+      <stop offset="45%" stop-color="#C9A0F0"/>
+      <stop offset="100%" stop-color="#FF9EAE"/>
+    </linearGradient>
+  </defs>
+  <rect width="1500" height="500" fill="#000000"/>
+  <text
+    x="750"
+    y="250"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    font-family="Helvetica, 'Helvetica Neue', Arial, sans-serif"
+    font-size="64"
+    font-weight="650"
+    letter-spacing="-0.02em"
+    fill="url(#textGradient)"
+  >Shop Structured.</text>
+</svg>

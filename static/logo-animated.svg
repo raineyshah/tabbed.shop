@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-8 -8 526 516" width="510" height="500">
+  <defs>
+    <filter id="laShadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="2" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+    <linearGradient id="laBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%">
+        <animate attributeName="stop-color" values="#D6EEFF;#FFE4EC;#E8F5E9;#FFF3E0;#D6EEFF" dur="8s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%">
+        <animate attributeName="stop-color" values="#E8D5F5;#C8E6C9;#FFECB3;#BBDEFB;#E8D5F5" dur="8s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%">
+        <animate attributeName="stop-color" values="#FADADD;#E3F2FD;#F8BBD0;#E0F7FA;#FADADD" dur="8s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+  </defs>
+  <style>
+    .la-tab-0 { animation: laTab0 8s ease-in-out infinite; }
+    .la-tab-1 { animation: laTab1 8s ease-in-out infinite; }
+    .la-tab-2 { animation: laTab2 8s ease-in-out infinite; }
+    .la-tab-3 { animation: laTab3 8s ease-in-out infinite; }
+    .la-tab-4 { animation: laTab4 8s ease-in-out infinite; }
+    @keyframes laTab0 {
+      0%, 100% { fill: #7EB8E0; }
+      20% { fill: #FF6B6B; }
+      40% { fill: #4ECDC4; }
+      60% { fill: #FFE66D; }
+      80% { fill: #C792EA; }
+    }
+    @keyframes laTab1 {
+      0%, 100% { fill: #9B8FD8; }
+      20% { fill: #4ECDC4; }
+      40% { fill: #FFE66D; }
+      60% { fill: #C792EA; }
+      80% { fill: #FF6B6B; }
+    }
+    @keyframes laTab2 {
+      0%, 100% { fill: #B57EDC; }
+      20% { fill: #FFE66D; }
+      40% { fill: #C792EA; }
+      60% { fill: #FF6B6B; }
+      80% { fill: #4ECDC4; }
+    }
+    @keyframes laTab3 {
+      0%, 100% { fill: #D97AB5; }
+      20% { fill: #C792EA; }
+      40% { fill: #FF6B6B; }
+      60% { fill: #4ECDC4; }
+      80% { fill: #FFE66D; }
+    }
+    @keyframes laTab4 {
+      0%, 100% { fill: #E8A0BF; }
+      20% { fill: #FF6B6B; }
+      40% { fill: #4ECDC4; }
+      60% { fill: #FFE66D; }
+      80% { fill: #7EB8E0; }
+    }
+  </style>
+  <g filter="url(#laShadow)">
+    <rect x="0" y="0" width="400" height="500" fill="url(#laBg)"/>
+    <rect class="la-tab-0" x="400" y="0" width="100" height="100" fill="#7EB8E0"/>
+    <rect class="la-tab-1" x="400" y="100" width="100" height="100" fill="#9B8FD8"/>
+    <rect class="la-tab-2" x="400" y="200" width="100" height="100" fill="#B57EDC"/>
+    <rect class="la-tab-3" x="400" y="300" width="100" height="100" fill="#D97AB5"/>
+    <rect class="la-tab-4" x="400" y="400" width="100" height="100" fill="#E8A0BF"/>
+  </g>
+</svg>

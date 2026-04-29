@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="#374151" aria-hidden="true">
+  <!-- Taller frame (14×19); horizontal padding p=2: frame(5)→dots(7), lines end(17)→frame(19); gap dots→lines = p -->
+  <rect x="5" y="2.5" width="14" height="19" fill="none" stroke="#374151" stroke-width="0.9"/>
+  <rect x="7" y="4.5" width="2.5" height="2.5" rx="0.45" ry="0.45"/>
+  <rect x="7" y="10.75" width="2.5" height="2.5" rx="0.45" ry="0.45"/>
+  <rect x="7" y="17" width="2.5" height="2.5" rx="0.45" ry="0.45"/>
+  <rect x="11.5" y="4.85" width="5.5" height="1.8" rx="0.45" ry="0.45"/>
+  <rect x="11.5" y="11.1" width="5.5" height="1.8" rx="0.45" ry="0.45"/>
+  <rect x="11.5" y="17.35" width="5.5" height="1.8" rx="0.45" ry="0.45"/>
+</svg>

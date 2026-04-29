@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/bin/python:*)",
+      "Bash(python init_db.py)",
+      "Bash(python -c ':*)",
+      "Bash(python -)",
+      "Bash(sqlite3 products.db \"ALTER TABLE brand_requests ADD COLUMN is_approved INTEGER NOT NULL DEFAULT 0;\")",
+      "Bash(sqlite3 products.db \"ALTER TABLE certification_requests ADD COLUMN is_approved INTEGER NOT NULL DEFAULT 0;\")",
+      "Bash(sqlite3 products.db \".tables\")",
+      "Bash(sqlite3 products.db \".schema brand_requests\")",
+      "Bash(sqlite3 products.db \".schema certification_requests\")",
+      "Bash(sqlite3 products.db \"PRAGMA table_info\\(product_requests\\);\")",
+      "Bash(sqlite3 products.db \"PRAGMA table_info\\(article_requests\\);\")",
+      "Bash(python -c \"from models import Base, engine; Base.metadata.create_all\\(bind=engine\\); print\\('notifications table created'\\)\")",
+      "Bash(sqlite3:*)"
+    ]
+  }
+}
