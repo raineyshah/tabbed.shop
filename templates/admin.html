@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+{% from "_admin_product_form_macro.html" import admin_product_form %}
+{% block title %}Admin — Tabbed{% endblock %}
+{% block body_attrs %} class="page-scroll {% if admin_authenticated %}page-admin page-admin-sheet{% else %}page-admin-login{% endif %}"{% if admin_authenticated %} data-admin-entity="{{ admin_entity }}"{% endif %}{% endblock %}
+{% block content %}
+    <div class="admin-container admin-sheet-layout">
+        {% if admin_authenticated %}
+        <div class="admin-top-actions admin-top-actions--unified" role="toolbar" aria-label="Admin">
+            <div class="admin-entity-tabs" role="tablist" aria-label="Catalog editor">
+                <a href="/admin/products" class="header-login-btn admin-entity-tab{% if admin_entity == 'products' %} admin-entity-tab--active{% endif %}" role="tab" {% if admin_entity == 'products' %}aria-current="page"{% endif %}>Products</a>
+                <a href="/admin/brands" class="header-login-btn admin-entity-tab{% if admin_entity == 'brands' %} admin-entity-tab--active{% endif %}" role="tab" {% if admin_entity == 'brands' %}aria-current="page"{% endif %}>Brands</a>
+                <a href="/admin/certifications" class="header-login-btn admin-entity-tab{% if admin_entity == 'certifications' %} admin-entity-tab--active{% endif %}" role="tab" {% if admin_entity == 'certifications' %}aria-current="page"{% endif %}>Certifications</a>
+                <a href="/admin/tests" class="header-login-btn admin-entity-tab admin-entity-tab--tests">Tests</a>
+            </div>
+            <button type="button" class="admin-logout-btn" id="adminLogoutBtn">Log Out</button>
+        </div>
+
+        <div id="admin-unified-panel" class="admin-unified-panel">
+            <p class="admin-sheet-intro text-muted-xs" id="adminUnifiedIntro" hidden></p>
+            <div class="admin-sheet-toolbar" role="toolbar" aria-label="Spreadsheet actions">
+                <button type="button" class="header-login-btn admin-sheet-add-product-btn" id="sheetBtnAddProduct">Add Product</button>
+                <button type="button" class="header-login-btn" id="sheetBtnReload">Reload</button>
+                <button type="button" class="header-login-btn" id="sheetBtnAddRow">Add row</button>
+                <button type="button" class="header-login-btn" id="sheetBtnDeleteRows">Delete selected</button>
+                <button type="button" class="header-login-btn" id="sheetBtnDuplicateRow">Duplicate selected</button>
+                <span class="admin-sheet-toolbar-sep admin-sheet-ai-sep" aria-hidden="true"></span>
+                <button type="button" class="header-login-btn admin-sheet-ai-btn" id="sheetBtnAiFill">AI fill from product link</button>
+                <button type="button" class="header-login-btn" id="sheetBtnSaveAll">Save all changed</button>
+                <span class="admin-sheet-status" id="sheetStatus" aria-live="polite"></span>
+            </div>
+            <div id="admin-sheet-product-mount" class="admin-product-sheet-mount"{% if admin_entity != 'products' %} hidden{% endif %}>
+                <div class="admin-product-sheet-table-outer">
+                    <table class="admin-product-sheet-table" id="adminProductSheetTable">
+                        <thead>
+                            <tr>
+                                <th class="admin-product-sheet-th admin-product-sheet-th--narrow" title="Bulk select">Sel</th>
+                                <th class="admin-product-sheet-th admin-product-sheet-th--narrow">id</th>
+                                <th class="admin-product-sheet-th">product_name</th>
+                                <th class="admin-product-sheet-th">brand_id</th>
+                                <th class="admin-product-sheet-th admin-product-sheet-th--cat">main_category</th>
+                                <th class="admin-product-sheet-th admin-product-sheet-th--cat">subcategory</th>
+                                <th class="admin-product-sheet-th">made_in</th>
+                                <th class="admin-product-sheet-th">price</th>
+                                <th class="admin-product-sheet-th">product_link</th>
+                                <th class="admin-product-sheet-th">earns_commission</th>
+                                <th class="admin-product-sheet-th">product_image</th>
+                                <th class="admin-product-sheet-th">product_image_filename</th>
+                                <th class="admin-product-sheet-th">made_with</th>
+                                <th class="admin-product-sheet-th">made_without</th>
+                                <th class="admin-product-sheet-th">attributes</th>
+                                <th class="admin-product-sheet-th">certifications</th>
+                                <th class="admin-product-sheet-th">description</th>
+                                <th class="admin-product-sheet-th">is_verified</th>
+                                <th class="admin-product-sheet-th admin-product-sheet-th--actions">actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminProductSheetTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="admin-sheet-table-wrap" class="admin-sheet-table-scroll"{% if admin_entity == 'products' %} hidden{% endif %}>
+                <table class="admin-sheet-table" id="adminSheetTable" tabindex="0">
+                    <thead id="adminSheetThead"></thead>
+                    <tbody id="adminSheetTbody"></tbody>
+                </table>
+            </div>
+            <template id="admin-sheet-product-row-tpl">
+{% include "_admin_product_table_row.html" %}
+            </template>
+        </div>
+
+        {% else %}
+        <div id="admin-signin-alerts"></div>
+        <div class="admin-signin-gate">
+            {% if admin_site_password_required %}
+            <div class="admin-signin-gate__primary">
+                <button type="button" class="header-login-btn" id="adminSignInToggle" aria-expanded="false" aria-controls="admin-signin-panel">Admin sign in</button>
+            </div>
+            <div id="admin-signin-panel" class="admin-signin-gate__panel" aria-hidden="true">
+                <div class="admin-signin-gate__panel-inner">
+                    <form class="login-modal-form" id="admin-send-link-form" novalidate autocomplete="on">
+                        <div class="form-group">
+                            <label for="adminSitePassword">Site password</label>
+                            <input type="password" id="adminSitePassword" name="site_password" required autocomplete="current-password" autocapitalize="none" spellcheck="false">
+                        </div>
+                        <div class="login-modal-actions">
+                            <button type="submit" class="login-modal-submit" id="adminSendLinkSubmit">Email me a sign-in link</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="admin-signin-gate__primary">
+                <button type="button" class="header-login-btn" id="adminSendLinkBtn">Admin sign in</button>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if admin_authenticated %}
+    <div id="adminModalAddProductBackdrop" class="contribute-modal-overlay" hidden aria-modal="true" role="dialog" aria-labelledby="adminAddProductModalTitle">
+        <div class="admin-modal-product-dialog contribute-modal--wide">
+            <div class="contribute-modal-header">
+                <h2 class="contribute-modal-title" id="adminAddProductModalTitle">Add Product</h2>
+                <button type="button" class="contribute-modal-close" id="adminAddProductModalClose" aria-label="Close">×</button>
+            </div>
+            <div class="form-section admin-add-prefill-section" id="admin-add-prefill-wrap">
+                <label for="adminAddProductPrefillSearch" class="text-muted-xs">Pre-fill from existing product</label>
+                <div class="admin-add-prefill-row">
+                    <input type="search" id="adminAddProductPrefillSearch" class="admin-add-prefill-input" placeholder="Search by name or ID…" autocomplete="off">
+                    <div id="adminAddProductPrefillResults" class="admin-add-prefill-results" hidden></div>
+                </div>
+            </div>
+            <div class="admin-modal-product-dialog__body">
+                {{ admin_product_form('ac-', 'adminAddProductForm', 'admin-add-alerts', '', is_create=true, hide_actions=false) }}
+            </div>
+        </div>
+    </div>
+    <script src="/static/catalog-ui.js"></script>
+    <script src="/static/admin-product-create.js"></script>
+    <script src="/static/admin-spreadsheet.js"></script>
+    <script>
+    (function () {
+        var lo = document.getElementById('adminLogoutBtn');
+        if (lo) {
+            lo.addEventListener('click', async function () {
+                try {
+                    await fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' });
+                } catch (e) { /* ignore */ }
+                window.location.href = '/admin/products';
+            });
+        }
+
+        /* Modal open/close */
+        window.adminSetModalOpen = function (id, open) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.hidden = !open;
+            if (open) {
+                var first = el.querySelector('input, textarea, button, select');
+                if (first) try { first.focus(); } catch (e) { /* ignore */ }
+            }
+        };
+
+        var addBackdrop = document.getElementById('adminModalAddProductBackdrop');
+        var addCloseBtn = document.getElementById('adminAddProductModalClose');
+
+        document.getElementById('sheetBtnAddProduct') && document.getElementById('sheetBtnAddProduct').addEventListener('click', function () {
+            window.adminSetModalOpen('adminModalAddProductBackdrop', true);
+        });
+
+        if (addCloseBtn) {
+            addCloseBtn.addEventListener('click', function () {
+                window.adminSetModalOpen('adminModalAddProductBackdrop', false);
+            });
+        }
+
+        if (addBackdrop) {
+            addBackdrop.addEventListener('click', function (e) {
+                if (e.target === addBackdrop) window.adminSetModalOpen('adminModalAddProductBackdrop', false);
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && !addBackdrop.hidden) window.adminSetModalOpen('adminModalAddProductBackdrop', false);
+            });
+        }
+
+        /* Prefill search */
+        var prefillInput = document.getElementById('adminAddProductPrefillSearch');
+        var prefillResults = document.getElementById('adminAddProductPrefillResults');
+        var prefillDebounce = null;
+        var prefillCache = null;
+
+        function closePrefillResults() {
+            if (prefillResults) prefillResults.hidden = true;
+        }
+
+        async function loadPrefillProducts() {
+            if (prefillCache) return prefillCache;
+            var res = await fetch('/api/admin/products', { credentials: 'same-origin', cache: 'no-store' });
+            if (!res.ok) throw new Error('Could not load products.');
+            var data = await res.json();
+            prefillCache = data.products || [];
+            return prefillCache;
+        }
+
+        if (prefillInput && prefillResults) {
+            prefillInput.addEventListener('input', function () {
+                clearTimeout(prefillDebounce);
+                var q = prefillInput.value.trim().toLowerCase();
+                if (!q) { closePrefillResults(); return; }
+                prefillDebounce = setTimeout(async function () {
+                    try {
+                        var products = await loadPrefillProducts();
+                        var matches = products.filter(function (p) {
+                            return (p.product_name || '').toLowerCase().includes(q) ||
+                                   String(p.id || '').includes(q);
+                        }).slice(0, 12);
+                        prefillResults.innerHTML = '';
+                        if (!matches.length) {
+                            prefillResults.innerHTML = '<div class="admin-prefill-result-empty">No matches</div>';
+                        } else {
+                            matches.forEach(function (p) {
+                                var btn = document.createElement('button');
+                                btn.type = 'button';
+                                btn.className = 'admin-prefill-result-item';
+                                btn.textContent = (p.product_name || '(unnamed)') + (p.id ? ' #' + p.id : '');
+                                btn.addEventListener('click', function () {
+                                    if (typeof window.__tabbedAdminPreFillAddFromProduct === 'function') {
+                                        window.__tabbedAdminPreFillAddFromProduct(p);
+                                    }
+                                    prefillInput.value = '';
+                                    closePrefillResults();
+                                });
+                                prefillResults.appendChild(btn);
+                            });
+                        }
+                        prefillResults.hidden = false;
+                    } catch (e) { /* ignore */ }
+                }, 220);
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!prefillInput.contains(e.target) && !prefillResults.contains(e.target)) {
+                    closePrefillResults();
+                }
+            });
+        }
+    })();
+    </script>
+    {% else %}
+    <script>
+    (function () {
+        const alerts = document.getElementById('admin-signin-alerts');
+        const sendBtn = document.getElementById('adminSendLinkBtn');
+        const toggleBtn = document.getElementById('adminSignInToggle');
+        const panel = document.getElementById('admin-signin-panel');
+        const sendForm = document.getElementById('admin-send-link-form');
+        const submitBtn = document.getElementById('adminSendLinkSubmit');
+        const sitePw = document.getElementById('adminSitePassword');
+        const needSitePassword = {{ admin_site_password_required | tojson }};
+        const params = new URLSearchParams(window.location.search);
+
+        function setPanelOpen(open) {
+            if (!panel || !toggleBtn) return;
+            panel.classList.toggle('is-open', open);
+            toggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+            if (open && sitePw) {
+                try { sitePw.focus(); } catch (e) { /* ignore */ }
+            }
+        }
+
+        if (params.get('msg') === 'invalid_link' && alerts) {
+            alerts.innerHTML = '<div class="alert alert-error">That sign-in link was invalid or expired. Request a new one.</div>';
+            try {
+                history.replaceState({}, '', window.location.pathname);
+            } catch (e) { /* ignore */ }
+            if (needSitePassword) setPanelOpen(true);
+        }
+
+        function showAlert(text, isError) {
+            if (!alerts) return;
+            alerts.innerHTML = '';
+            if (!text) return;
+            const div = document.createElement('div');
+            div.className = isError ? 'alert alert-error' : 'alert alert-success';
+            div.textContent = text;
+            alerts.appendChild(div);
+        }
+
+        async function sendLink() {
+            const activeSubmit = submitBtn || sendBtn;
+            if (needSitePassword && sitePw && !(sitePw.value || '').trim()) {
+                showAlert('Enter the site password.', true);
+                return;
+            }
+            showAlert('', false);
+            if (activeSubmit) {
+                activeSubmit.disabled = true;
+                if (submitBtn) submitBtn.textContent = 'Sending…';
+                if (sendBtn) sendBtn.textContent = 'Sending…';
+            }
+            try {
+                const body = needSitePassword && sitePw
+                    ? JSON.stringify({ password: sitePw.value || '' })
+                    : JSON.stringify({});
+                const res = await fetch('/api/admin/send-link', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                    body: body,
+                });
+                const data = await res.json().catch(function () { return {}; });
+                if (res.ok) {
+                    showAlert(data.message || 'Check your email for the sign-in link.', false);
+                } else {
+                    showAlert(typeof data.detail === 'string' ? data.detail : 'Could not send email.', true);
+                }
+            } catch (err) {
+                showAlert(err.message || 'Request failed.', true);
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Email me a sign-in link';
+                }
+                if (sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = 'Admin sign in';
+                }
+            }
+        }
+
+        if (toggleBtn && panel) {
+            toggleBtn.addEventListener('click', function () {
+                setPanelOpen(!panel.classList.contains('is-open'));
+            });
+        }
+        if (sendForm && submitBtn) {
+            sendForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                sendLink();
+            });
+        }
+        if (sendBtn) sendBtn.addEventListener('click', function () { sendLink(); });
+    })();
+    </script>
+    {% endif %}
+{% endblock %}

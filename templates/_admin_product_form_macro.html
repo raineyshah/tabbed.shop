@@ -1,0 +1,205 @@
+{% macro admin_product_form(id_prefix, form_id, alerts_id, section_title, is_create, hide_actions=false) %}
+{% if section_title %}
+<div class="admin-title admin-title--sub">{{ section_title }}</div>
+{% endif %}
+<div id="{{ alerts_id }}"></div>
+<div class="admin-create-product-wrap contribute-modal contribute-modal--wide">
+    <div class="contribute-modal-body">
+        <form id="{{ form_id }}" class="contribute-container admin-product-form" enctype="multipart/form-data">
+            <div class="form-section admin-product-form__section">
+                <div class="form-group">
+                    <label for="{{ id_prefix }}productImage">Product image</label>
+                    <div class="file-upload">
+                        <input type="file" id="{{ id_prefix }}productImage" name="product_image" accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,.jpg,.jpeg,.png,.webp,.gif,.svg">
+                        <label for="{{ id_prefix }}productImage">Choose image…</label>
+                        <div class="file-name" id="{{ id_prefix }}productImageName"></div>
+                    </div>
+                </div>
+                <div class="form-group u-mt-14" id="{{ id_prefix }}productNewImagePreviewWrap" hidden>
+                    <span class="text-muted-xs">Preview</span>
+                    <div class="admin-edit-ref-preview">
+                        <img id="{{ id_prefix }}productNewImagePreview" alt="">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section admin-product-form__section">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="{{ id_prefix }}productName">Product name *</label>
+                        <input type="text" id="{{ id_prefix }}productName" name="product_name" maxlength="120" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ id_prefix }}price">Price</label>
+                        <input type="number" id="{{ id_prefix }}price" name="price" step="0.01" min="0" placeholder="Optional (e.g. scrapers)">
+                    </div>
+                </div>
+                <div class="form-group u-mt-14">
+                    <label for="{{ id_prefix }}productDescription">Description</label>
+                    <textarea id="{{ id_prefix }}productDescription" name="description" rows="4"></textarea>
+                </div>
+                <div class="form-group u-mt-14">
+                    <label for="{{ id_prefix }}productLink">Product link</label>
+                    <div class="admin-product-link-row">
+                        <input type="url" class="admin-product-link-input" id="{{ id_prefix }}productLink" name="product_link" placeholder="https://…" autocomplete="off">
+                        {% if is_create %}
+                        <button type="button" class="header-login-btn admin-product-link-ai-btn" id="{{ id_prefix }}productLinkAiBtn">Populate with AI</button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-grid u-mt-14">
+                    <div class="form-group">
+                        <label class="label-row">
+                            <input type="checkbox" id="{{ id_prefix }}earnsCommission" name="earns_commission" value="1">
+                            Earns commission (affiliate)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="label-row">
+                            <input type="checkbox" id="{{ id_prefix }}isVerified" name="is_verified" value="1">
+                            Verified product
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" id="{{ id_prefix }}mainCategory" name="main_category" value="">
+            <input type="hidden" id="{{ id_prefix }}subcategory" name="subcategory" value="">
+            <input type="hidden" id="{{ id_prefix }}brandName" name="brand_name" value="">
+            <input type="hidden" id="{{ id_prefix }}madeIn" name="made_in" value="">
+
+            <div class="contribute-tab-picker-rows">
+                <div class="contribute-tab-picker-row contribute-tab-picker-row--four">
+                    <div class="contribute-attr-column contribute-attr-column--stack">
+                        <div class="sidebar-section contribute-attr-panel" data-contribute-panel>
+                            <div class="contribute-attr-header-sidebar">
+                                <div class="contribute-attr-header-row">
+                                    <span class="contribute-attr-header-title">Category</span>
+                                    <div class="contribute-attr-header-tools">
+                                        <button type="button" class="contribute-header-tool" data-tool="search" aria-label="Search"><img src="/static/search.svg" alt="" width="16" height="16"></button>
+                                    </div>
+                                </div>
+                                <div class="contribute-attr-header-panel-expand">
+                                    <div class="contribute-expand-search contribute-container" hidden>
+                                        <input type="search" class="sidebar-filter-search contribute-header-search-input" id="{{ id_prefix }}search-contribute-category" placeholder="Filter…" autocomplete="off">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sidebar-selected-items" id="{{ id_prefix }}contribute-selected-category"></div>
+                            <div class="sidebar-filter-list contribute-attr-picker-list" id="{{ id_prefix }}contribute-category-picker"></div>
+                        </div>
+                    </div>
+                    <div class="contribute-attr-column contribute-attr-column--stack">
+                        <div class="sidebar-section contribute-attr-panel" data-contribute-panel>
+                            <div class="contribute-attr-header-sidebar">
+                                <div class="contribute-attr-header-row">
+                                    <span class="contribute-attr-header-title">Subcategory</span>
+                                    <div class="contribute-attr-header-tools">
+                                        <button type="button" class="contribute-header-tool" data-tool="search" aria-label="Search"><img src="/static/search.svg" alt="" width="16" height="16"></button>
+                                    </div>
+                                </div>
+                                <div class="contribute-attr-header-panel-expand">
+                                    <div class="contribute-expand-search contribute-container" hidden>
+                                        <input type="search" class="sidebar-filter-search contribute-header-search-input" id="{{ id_prefix }}search-contribute-subcategory" placeholder="Filter…" autocomplete="off">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sidebar-selected-items" id="{{ id_prefix }}contribute-selected-subcategory"></div>
+                            <div class="sidebar-filter-list contribute-attr-picker-list" id="{{ id_prefix }}contribute-subcategory-picker"></div>
+                        </div>
+                    </div>
+                    <div class="contribute-attr-column contribute-attr-column--stack">
+                        <div class="sidebar-section contribute-attr-panel" data-contribute-panel>
+                            <div class="contribute-attr-header-sidebar">
+                                <div class="contribute-attr-header-row">
+                                    <span class="contribute-attr-header-title">Brand</span>
+                                    <div class="contribute-attr-header-tools">
+                                        <button type="button" class="contribute-header-tool" data-tool="search" aria-label="Search"><img src="/static/search.svg" alt="" width="16" height="16"></button>
+                                    </div>
+                                </div>
+                                <div class="contribute-attr-header-panel-expand">
+                                    <div class="contribute-expand-search contribute-container" hidden>
+                                        <input type="search" class="sidebar-filter-search contribute-header-search-input" id="{{ id_prefix }}search-contribute-brand" placeholder="Filter…" autocomplete="off">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sidebar-selected-items" id="{{ id_prefix }}contribute-selected-brand"></div>
+                            <div class="sidebar-filter-list contribute-attr-picker-list" id="{{ id_prefix }}contribute-brand-picker"></div>
+                        </div>
+                    </div>
+                    <div class="contribute-attr-column contribute-attr-column--stack">
+                        <div class="sidebar-section contribute-attr-panel" data-contribute-panel>
+                            <div class="contribute-attr-header-sidebar">
+                                <div class="contribute-attr-header-row">
+                                    <span class="contribute-attr-header-title">Certifications</span>
+                                    <div class="contribute-attr-header-tools">
+                                        <button type="button" class="contribute-header-tool" data-tool="search" aria-label="Search"><img src="/static/search.svg" alt="" width="16" height="16"></button>
+                                    </div>
+                                </div>
+                                <div class="contribute-attr-header-panel-expand">
+                                    <div class="contribute-expand-search contribute-container" hidden>
+                                        <input type="search" class="sidebar-filter-search contribute-header-search-input" id="{{ id_prefix }}search-contribute-certifications" placeholder="Filter…" autocomplete="off">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sidebar-selected-items admin-cert-selected-host" id="{{ id_prefix }}contribute-selected-certifications"></div>
+                            <div class="sidebar-filter-list contribute-attr-picker-list" id="{{ id_prefix }}contribute-certifications-picker"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contribute-tab-picker-row contribute-tab-picker-row--four">
+                    {% set panels = [
+                        ('Made In', 'made-in', 'contribute-made-in-picker', 'contribute-selected-made-in', 'search-contribute-made-in', False, ''),
+                        ('Made With', 'made-with', 'contribute-made-with-picker', 'contribute-selected-made-with', 'search-contribute-made-with', True, 'contributeNewMadeWith'),
+                        ('Made Without', 'made-without', 'contribute-made-without-picker', 'contribute-selected-made-without', 'search-contribute-made-without', True, 'contributeNewMadeWithout'),
+                        ('Features', 'attributes', 'contribute-attributes-picker', 'contribute-selected-attributes', 'search-contribute-attributes', True, 'contributeNewAttributes'),
+                    ] %}
+                    {% for title, _slug, pick_id, sel_id, search_id, with_add, new_id in panels %}
+                    <div class="contribute-attr-column contribute-attr-column--stack">
+                        <div class="sidebar-section contribute-attr-panel" data-contribute-panel>
+                            <div class="contribute-attr-header-sidebar">
+                                <div class="contribute-attr-header-row">
+                                    <span class="contribute-attr-header-title">{{ title }}</span>
+                                    <div class="contribute-attr-header-tools">
+                                        <button type="button" class="contribute-header-tool" data-tool="search" aria-label="Search"><img src="/static/search.svg" alt="" width="16" height="16"></button>
+                                        {% if with_add %}
+                                        <button type="button" class="contribute-header-tool" data-tool="add" aria-label="Add"><img src="/static/plus.svg" alt="" width="16" height="16"></button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="contribute-attr-header-panel-expand">
+                                    <div class="contribute-expand-search contribute-container" hidden>
+                                        <input type="search" class="sidebar-filter-search contribute-header-search-input" id="{{ id_prefix }}{{ search_id }}" placeholder="Filter…" autocomplete="off">
+                                    </div>
+                                    {% if with_add and new_id %}
+                                    <div class="contribute-expand-add contribute-container" hidden>
+                                        <div class="contribute-expand-add-row">
+                                            <input type="text" class="contribute-attr-new-input" id="{{ id_prefix }}{{ new_id }}" placeholder="Add…" autocomplete="off">
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="sidebar-selected-items" id="{{ id_prefix }}{{ sel_id }}"></div>
+                            <div class="sidebar-filter-list contribute-attr-picker-list" id="{{ id_prefix }}{{ pick_id }}"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if not hide_actions %}
+            <div class="button-group admin-product-form__actions">
+                {% if is_create %}
+                <button type="submit" class="header-login-btn">Add product</button>
+                <button type="reset" class="header-login-btn admin-product-form__btn-secondary">Clear form</button>
+                {% else %}
+                <button type="submit" class="header-login-btn">Save changes</button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endmacro %}

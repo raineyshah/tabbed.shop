@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Search{% if search_query %} — {{ search_query }}{% endif %}{% endblock %}
+{% block body_attrs %} class="page-scroll{% if search_query %} page-shop has-site-affiliate-strip page-search-with-affiliate{% endif %}"{% endblock %}
+{% block affiliate_strip %}
+    {% if search_query %}
+    {% include "_affiliate_disclosure_strip.html" %}
+    {% endif %}
+{% endblock %}
+{% block content %}
+    {% if not search_query %}
+    <div class="page-wrap">
+        <h1 class="page-title">Search</h1>
+        <p class="shop-empty-state">Enter a search in the header and press <strong>Enter</strong> or click the magnifying glass.</p>
+    </div>
+    {% else %}
+    <div class="shop-sidebar-backdrop" id="shop-sidebar-backdrop" hidden aria-hidden="true"></div>
+    <div class="shop-layout">
+        <aside class="sidebar shop-sidebar" aria-label="Product filters">
+            <div class="sidebar-main shop-sidebar-inner">
+                <div class="shop-sidebar-mobile-header">
+                    <span class="shop-sidebar-mobile-header__title">Filters</span>
+                    <button type="button" class="header-login-btn shop-sidebar-mobile-header__reset" id="shop-sidebar-reset-filters" aria-label="Reset all filters">Reset</button>
+                </div>
+                <div id="shop-sidebar-sections"></div>
+            </div>
+        </aside>
+        <main class="shop-main">
+            <h1 class="visually-hidden">Search results</h1>
+            <div class="shop-products-area">
+                <div class="shop-products-scroll">
+                    <div id="products-container" class="shop-products-grid" role="list"></div>
+                    <p id="shop-empty-state" class="shop-empty-state" hidden>No products matched this search or the selected filters.</p>
+                </div>
+                <footer class="shop-grid-footer" id="shop-grid-footer" aria-label="Product list controls" hidden>
+                    <div class="shop-grid-footer__left">
+                        <div class="shop-grid-footer__sort">
+                            <span class="shop-grid-footer__inline-label" aria-hidden="true">
+                                <span class="shop-grid-footer__inline-label-full">Sort by price</span>
+                                <span class="shop-grid-footer__inline-label-short">Sort</span>
+                            </span>
+                            <select id="shop-grid-sort" class="shop-grid-footer__select" aria-label="Sort by price">
+                                <option value="default">Default</option>
+                                <option value="asc">Low → high</option>
+                                <option value="desc">High → low</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="shop-grid-footer__right">
+                        <div class="shop-grid-footer__pager">
+                            <button type="button" class="shop-grid-footer__btn" id="shop-grid-prev" aria-label="Previous page">Prev</button>
+                            <span class="shop-grid-footer__page" id="shop-grid-page-label" aria-live="polite"></span>
+                            <button type="button" class="shop-grid-footer__btn" id="shop-grid-next" aria-label="Next page">Next</button>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+    <script>
+        window.__TABBED_SEARCH_QUERY__ = {{ search_query | tojson }};
+    </script>
+    {% endif %}
+{% endblock %}
+{% block body_scripts %}
+    {% if search_query %}
+    <script src="/static/catalog-ui.js"></script>
+    <script src="/static/shop-page.js"></script>
+    {% endif %}
+{% endblock %}

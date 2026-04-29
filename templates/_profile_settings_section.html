@@ -1,0 +1,74 @@
+        <section class="profile-settings-v2-section" aria-labelledby="profile-settings-v2-heading">
+            <header class="profile-settings-v2-intro">
+                <h2 class="profile-settings-v2-title" id="profile-settings-v2-heading">Account settings</h2>
+            </header>
+
+            <div class="profile-settings-v2-groups">
+                {% if profile_is_owner %}
+                <div class="profile-settings-v2-group">
+                    <div class="profile-settings-v2-rows" role="list">
+                        <div class="profile-setting-item profile-setting-row" role="listitem">
+                            <div class="profile-setting-label">
+                                <span class="profile-setting-name">Profile photo</span>
+                                <span class="profile-setting-desc">Shown on your public profile and in the site header</span>
+                            </div>
+                            <div class="profile-setting-item__controls profile-setting-row__actions">
+                                <button type="button" class="profile-setting-action" id="profile-avatar-edit-trigger" aria-label="Change profile photo">Change</button>
+                            </div>
+                        </div>
+                        {% if profile_owner_email %}
+                        <div class="profile-setting-item profile-setting-row" role="listitem">
+                            <div class="profile-setting-label">
+                                <span class="profile-setting-name">Email</span>
+                                <span class="profile-setting-desc"><span class="profile-setting-email-inline" id="profile-settings-email-display">{{ profile_owner_email }}</span></span>
+                            </div>
+                            <div class="profile-setting-item__controls profile-setting-row__actions">
+                                <button type="button" class="profile-setting-action" id="profile-change-email-btn" aria-label="Change email">Change</button>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="profile-setting-item profile-setting-row" role="listitem">
+                            <div class="profile-setting-label">
+                                <span class="profile-setting-name">Username</span>
+                                <span class="profile-setting-desc"><span class="profile-setting-email-inline" id="profile-settings-username-display">{{ profile_username }}</span></span>
+                            </div>
+                            <div class="profile-setting-item__controls profile-setting-row__actions">
+                                <button type="button" class="profile-setting-action" id="profile-change-username-btn" aria-label="Change username">Change</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="profile-settings-v2-group">
+                    <div class="profile-settings-v2-rows" role="list">
+                        <div class="profile-setting-item profile-setting-row" role="listitem">
+                            <div class="profile-setting-label">
+                                <span class="profile-setting-name">Favorite products</span>
+                                <span class="profile-setting-desc">Let visitors see your favorites on your public profile</span>
+                            </div>
+                            <div class="profile-setting-item__controls profile-setting-row__actions">
+                                <div class="profile-setting-control profile-setting-segment" role="group" aria-label="Show favorites publicly">
+                                    <button type="button" class="profile-setting-btn" id="profile-favorites-public-off-settings" data-setting="favorites-visible" data-value="no">Off</button>
+                                    <button type="button" class="profile-setting-btn" id="profile-favorites-public-on-settings" data-setting="favorites-visible" data-value="yes">On</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-settings-v2-group">
+                    <div class="profile-settings-v2-rows" role="list">
+                        <div class="profile-setting-item profile-setting-row profile-setting-item--danger profile-setting-row--danger" role="listitem">
+                            <div class="profile-setting-label">
+                                <span class="profile-setting-name">Log out</span>
+                                <span class="profile-setting-desc">End your session on this device</span>
+                            </div>
+                            <div class="profile-setting-item__controls profile-setting-row__actions">
+                                <button type="button" class="profile-setting-action profile-setting-action--danger" id="profile-settings-logout-btn">Log out</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>

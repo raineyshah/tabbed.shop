@@ -1,0 +1,39 @@
+{# Shared profile hero. Expects profile_* context from account routes. #}
+<section class="profile-v2-hero" aria-labelledby="profile-v2-heading">
+    <div class="profile-v2-hero__card">
+        <div class="profile-v2-identity">
+            <div class="profile-v2-avatar-shell {% if not profile_has_custom_avatar %}profile-v2-avatar-shell--default{% endif %}">
+                {% if profile_has_custom_avatar %}
+                <img src="{{ profile_avatar_url }}" alt="" class="profile-v2-avatar" id="profile-avatar-landing" width="160" height="160" decoding="async">
+                {% else %}
+                <img src="/static/person.svg" alt="" class="profile-v2-avatar profile-v2-avatar--placeholder" id="profile-avatar-landing" width="128" height="128" decoding="async" fetchpriority="high">
+                {% endif %}
+            </div>
+            <div class="profile-v2-identity__main">
+                <h1 class="profile-v2-title" id="profile-v2-heading">
+                    <button type="button" class="profile-v2-copy-row" id="profile-v2-copy-link" aria-label="Copy profile page link" title="Copy link">
+                        <span class="profile-v2-copy-row__icon profile-v2-copy-row__link" aria-hidden="true">
+                            <svg class="profile-v2-copy-row__link-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path vector-effect="non-scaling-stroke" d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path vector-effect="non-scaling-stroke" d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                        </span>
+                        <span class="profile-v2-copy-row__name">{{ profile_username }}</span>
+                    </button>
+                </h1>
+                {% if profile_joined_month_year %}
+                <div class="profile-v2-meta">
+                    <div class="profile-v2-meta-bunch">
+                        <div class="landing-category-card profile-v2-meta-tile profile-v2-meta-tile--joined">
+                            <span class="profile-v2-meta-tile__inner">
+                                <img src="/static/logo-animated.svg" alt="" class="profile-v2-meta-tile__logo" width="20" height="20" decoding="async">
+                                Joined {{ profile_joined_month_year }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}tabbed.shop{% endblock %}
+{% block body_attrs %} class="page-scroll"{% endblock %}
+{% block content %}
+<div class="page-wrap page-wrap--about page-wrap--landing">
+    <div class="landing">
+        <header class="landing-hero" aria-labelledby="landing-headline">
+            <div class="landing-hero__glow" aria-hidden="true"></div>
+            <div class="landing-hero__content">
+                <img src="/static/logo-animated.svg" alt="" class="landing-logo__img" width="192" height="192" decoding="async">
+                <h1 class="landing-headline" id="landing-headline">Shop Structured.</h1>
+                <p class="landing-tagline">Discover curated products through structured tabs on their features, certifications, materials, and countries of origin. </p>
+            </div>
+        </header>
+
+        {% if nav_categories and nav_categories|length > 0 %}
+        <section class="landing-categories" aria-labelledby="landing-categories-heading">
+            <h2 class="landing-section-heading" id="landing-categories-heading">Start browsing by category:</h2>
+            <nav class="landing-category-grid" aria-label="Product categories">
+                {% for c in nav_categories %}
+                <a class="landing-category-card" href="/{{ c.slug }}">{{ c.name }}</a>
+                {% endfor %}
+            </nav>
+        </section>
+        {% endif %}
+
+        <nav class="landing-site-links" aria-label="About and contact">
+            <a href="/about" class="landing-site-links__a">About</a>
+            <span class="landing-site-links__dot" aria-hidden="true">·</span>
+            <a href="/about/contact" class="landing-site-links__a">Contact</a>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+{% block body_scripts %}
+<script>
+(function () {
+    const btn = document.getElementById('landing-sign-in-btn');
+    if (btn) {
+        const open = typeof window.TabbedOpenLoginModal === 'function' ? window.TabbedOpenLoginModal : null;
+        if (open) {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                open();
+            });
+        }
+        const getUser = window.TabbedGetContributorCookie;
+        if (typeof getUser === 'function' && getUser()) {
+            btn.setAttribute('hidden', '');
+        }
+    }
+})();
+</script>
+{% endblock %}

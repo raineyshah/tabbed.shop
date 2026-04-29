@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block body_attrs %} class="page-scroll"{% endblock %}
+{% block content %}
+    {% set _tab = account_tab|default('') %}
+    {% if _tab == 'settings' %}
+    <div class="page-wrap page-wrap--profile-v2 page-wrap--profile-favorites profile-account-page profile-account-page--settings-v2">
+        {% include "_profile_v2_hero.html" %}
+        <div id="profile-v2-copy-toast" class="profile-v2-copy-toast" role="status" aria-live="polite" hidden>
+            <span class="tabbed-toast__message"></span>
+            <button type="button" class="tabbed-toast__close" aria-label="Dismiss">×</button>
+        </div>
+        <section class="profile-settings-v2-below-hero" aria-label="Account settings">
+        <div class="profile-settings-v2-panel">
+            <div class="profile-settings-v2-card profile-v2-favorites__card">
+                <div class="profile-account-body profile-account-body--new">
+    {% else %}
+    <div class="profile-container profile-account-page profile-account-page--new">
+        <div class="landing profile-account-inner profile-account-inner--new">
+        <header class="profile-hero-new" aria-labelledby="profile-display-name-new">
+            <div class="profile-hero-new__content">
+                <div class="profile-page-avatar-wrap profile-page-avatar-wrap--new">
+                    <div class="profile-avatar-ring {% if not profile_has_custom_avatar %}profile-avatar-ring--default{% endif %}">
+                        {% if profile_has_custom_avatar %}
+                        <img src="{{ profile_avatar_url }}" alt="" class="landing-logo__img profile-user-avatar" id="profile-page-avatar" width="124" height="124" decoding="async">
+                        {% else %}
+                        <img src="/static/person.svg" alt="" class="landing-logo__img profile-user-avatar profile-user-avatar--default" id="profile-page-avatar" width="124" height="124" decoding="async">
+                        {% endif %}
+                    </div>
+                </div>
+                <h1 class="profile-display-name--gradient" id="profile-display-name-new">{{ profile_username }}</h1>
+                {% if profile_favorite_count > 0 %}
+                <p class="profile-hero-favorites">
+                    <img src="/static/heart-filled.svg" alt="" class="profile-hero-favorites-icon" width="16" height="16">
+                    <span class="profile-hero-favorites-count">{{ profile_favorite_count }} favorite{% if profile_favorite_count != 1 %}s{% endif %}</span>
+                </p>
+                {% endif %}
+                {% if profile_joined_month_year %}
+                <p class="profile-hero-meta-new">Joined {{ profile_joined_month_year }}</p>
+                {% endif %}
+                {% if _tab == 'payout' %}
+                <p class="profile-hero-page-desc">Payout history and balances.</p>
+                {% else %}
+                <div class="profile-hero-divider"></div>
+                <p class="profile-hero-section-heading">View favorites by category:</p>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="profile-account-body profile-account-body--new">
+    {% endif %}
+                    {% block user_account_body %}{% endblock %}
+    {% if _tab == 'settings' %}
+                </div>
+            </div>
+        </div>
+        </section>
+        <script>
+        (function () {
+            var toastEl = document.getElementById('profile-v2-copy-toast');
+            var rowBtn = document.getElementById('profile-v2-copy-link');
+            var hideTimer;
+            var toastMsg = toastEl ? toastEl.querySelector('.tabbed-toast__message') : null;
+            var toastClose = toastEl ? toastEl.querySelector('.tabbed-toast__close') : null;
+            function hideCopiedToast() {
+                if (!toastEl) return;
+                if (toastMsg) toastMsg.textContent = '';
+                toastEl.hidden = true;
+                window.clearTimeout(hideTimer);
+            }
+            function showCopiedToast() {
+                if (!toastEl) return;
+                if (toastMsg) toastMsg.textContent = 'Link copied to clipboard';
+                toastEl.hidden = false;
+                window.clearTimeout(hideTimer);
+                hideTimer = window.setTimeout(hideCopiedToast, 3000);
+            }
+            if (toastClose) toastClose.addEventListener('click', hideCopiedToast);
+            function tabbedFallbackCopyText(text) {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy'); } catch (e) {}
+                document.body.removeChild(ta);
+            }
+            function profilePublicUrl() {
+                var path = (window.location.pathname || '').replace(/\/settings\/?$/, '');
+                return window.location.origin + path;
+            }
+            function copyUrl() {
+                var url = profilePublicUrl();
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(url).then(showCopiedToast).catch(function () {
+                        tabbedFallbackCopyText(url);
+                        showCopiedToast();
+                    });
+                } else {
+                    tabbedFallbackCopyText(url);
+                    showCopiedToast();
+                }
+            }
+            if (rowBtn) {
+                rowBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    copyUrl();
+                });
+            }
+        })();
+        </script>
+    </div>
+    {% else %}
+        </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% block user_account_modals %}{% endblock %}
+
+    {% if profile_is_owner and _tab == 'settings' %}
+    <div class="profile-avatar-modal-backdrop" id="profile-avatar-modal-backdrop" hidden aria-hidden="true"></div>
+    <div class="profile-avatar-modal" id="profile-avatar-modal" role="dialog" aria-modal="true" aria-labelledby="profile-avatar-modal-title" hidden>
+        <div class="profile-avatar-modal__shell">
+            <div class="profile-avatar-modal__head">
+                <h2 class="profile-avatar-modal__title" id="profile-avatar-modal-title">Profile photo</h2>
+                <button type="button" class="profile-avatar-modal__close" id="profile-avatar-modal-close" aria-label="Close">✕</button>
+            </div>
+            <p class="profile-avatar-modal__hint">Choose a photo, then drag to position it. Use the slider or trackpad to zoom. The preview is cropped to a circle.</p>
+            <input type="file" id="profile-avatar-file" class="visually-hidden" accept="image/jpeg,image/png,image/webp,image/gif">
+            <button type="button" class="profile-avatar-modal__pick" id="profile-avatar-pick-file">Choose image…</button>
+            <div class="profile-avatar-canvas-wrap">
+                <div class="profile-avatar-preview-ring" aria-hidden="true">
+                    <canvas id="profile-avatar-preview" class="profile-avatar-preview-canvas" width="280" height="280" aria-label="Circular crop preview"></canvas>
+                </div>
+            </div>
+            <label class="profile-avatar-zoom-label">
+                Zoom
+                <input type="range" id="profile-avatar-zoom" min="50" max="300" value="100">
+            </label>
+            <p class="profile-avatar-status" id="profile-avatar-status" role="status"></p>
+            <div class="profile-avatar-modal__actions">
+                <button type="button" class="profile-avatar-modal__btn profile-avatar-modal__btn--secondary" id="profile-avatar-modal-cancel">Cancel</button>
+                <button type="button" class="profile-avatar-modal__btn profile-avatar-modal__btn--danger" id="profile-avatar-modal-remove" {% if not profile_has_custom_avatar %}hidden{% endif %}>Remove photo</button>
+                <button type="button" class="profile-avatar-modal__btn profile-avatar-modal__btn--primary" id="profile-avatar-modal-save">Save</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% block user_account_scripts %}{% endblock %}
+
+    {% if profile_is_owner and _tab == 'settings' %}
+    <script src="/static/profile-avatar-crop.js" defer></script>
+    {% endif %}
+{% endblock %}

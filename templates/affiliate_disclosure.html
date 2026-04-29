@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Affiliate disclosure{% endblock %}
+{% block body_attrs %} class="page-scroll"{% endblock %}
+{% block content %}
+    <div class="page-wrap page-wrap--about">
+        <div class="landing">
+            <div class="page-title">Affiliate disclosure</div>
+            <div class="about-section__body legal-prose">
+                <div class="affiliate-disclosure affiliate-disclosure--page" role="note">
+                    {% include "_affiliate_disclosure_compact.html" %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

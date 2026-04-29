@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}tabbed.shop{% endblock %}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="icon" href="/static/logo.svg" type="image/svg+xml">
+    <script type="application/json" id="tabbed-nav-categories-json">{{ nav_categories | default([]) | tojson }}</script>
+    <script type="application/json" id="tabbed-viewer-joined-json">{{ viewer_joined_month_year | default("", true) | tojson }}</script>
+    {% block head_extra %}{% endblock %}
+</head>
+<body{% block body_attrs %}{% endblock %}>
+<script>
+(function () {
+    try {
+        var m = document.cookie.match(/tabbed_contributor_username=([^;]+)/);
+        var u = m ? decodeURIComponent(m[1]).trim() : '';
+        if (!u) document.documentElement.classList.add('tabbed-auth-logged-out');
+    } catch (e) {
+        document.documentElement.classList.add('tabbed-auth-logged-out');
+    }
+})();
+</script>
+<script>
+(function () {
+    function applyTabbedDocScroll() {
+        try {
+            var docEl = document.documentElement;
+            var b = document.body;
+            if (!b || !b.classList || !b.classList.contains('page-scroll')) {
+                docEl.classList.remove('tabbed-doc-scroll');
+                return;
+            }
+            if (document.querySelector('.shop-layout')) {
+                docEl.classList.remove('tabbed-doc-scroll');
+                return;
+            }
+            docEl.classList.add('tabbed-doc-scroll');
+        } catch (e) { /* ignore */ }
+    }
+    function applyTabbedDocScrollSoon() {
+        applyTabbedDocScroll();
+        // Content below early <script> tags may not exist on first run; retry once layouts settle.
+        requestAnimationFrame(function () {
+            applyTabbedDocScroll();
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyTabbedDocScrollSoon);
+    } else {
+        applyTabbedDocScrollSoon();
+    }
+    window.addEventListener('load', applyTabbedDocScroll);
+})();
+</script>
+<script>
+(function () {
+    try {
+        sessionStorage.removeItem('tabbed_affiliate_strip_dismissed_session');
+        var dismissedFor = sessionStorage.getItem('tabbed_affiliate_strip_dismissed_for');
+        if (dismissedFor && dismissedFor === window.location.pathname + window.location.search) {
+            document.documentElement.classList.add('affiliate-strip-suppressed');
+        }
+    } catch (e) { /* ignore */     }
+})();
+</script>
+{% block affiliate_strip %}{% endblock %}
+    <div class="header">
+        {% block header_left %}
+        <div class="header-left header-hbar-seg">
+            <div class="header-left-brand">
+                <a href="/"><img src="/static/logo-animated.svg" alt="Logo" class="header-logo"></a>
+            </div>
+        </div>
+        {% endblock %}
+        <div class="header-middle">
+            {% block header_nav %}
+            <nav class="header-nav-options" aria-label="Main navigation">
+                <a href="/search" class="header-nav-btn header-nav-btn--text" id="header-search-nav-btn" aria-label="Search products" aria-expanded="false" aria-controls="header-search-panel">Search</a>
+                <div class="header-nav-item header-nav-categories header-nav-categories--inline" id="header-categories-mega">
+                    <div class="header-categories-mains-scroll" id="header-categories-mains-scroll">
+                        <div class="header-categories-row header-categories-row--mains" id="header-categories-mains" role="menubar">
+                            <a href="/all" class="header-category-main header-category-main--all" role="menuitem">All</a>
+                            {% if nav_categories %}
+                            {% for c in nav_categories %}
+                            <a href="/{{ c.slug }}" class="header-category-main" role="menuitem" data-main-slug="{{ c.slug }}" data-subcategories="{{ (c.subcategories | default([])) | tojson | forceescape }}">{{ c.name }}</a>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="header-nav-mains-end-cluster">
+                </div>
+            </nav>
+            {% endblock %}
+        </div>
+        <div class="header-end">
+            <div class="header-auth-column">
+                <div class="header-hbar-seg">
+                    <button type="button" class="header-mobile-search-btn" id="header-mobile-search-btn" aria-label="Search products">
+                        <img src="/static/search.svg" alt="" class="header-mobile-search-btn__icon" width="24" height="24" decoding="async" aria-hidden="true">
+                    </button>
+                </div>
+                <div class="header-hbar-seg">
+                    <button type="button" class="header-mobile-menu-btn" id="header-mobile-menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-cat-menu">
+                        <span class="header-mobile-menu-btn__line" aria-hidden="true"></span>
+                        <span class="header-mobile-menu-btn__line" aria-hidden="true"></span>
+                        <span class="header-mobile-menu-btn__line" aria-hidden="true"></span>
+                    </button>
+                </div>
+                {% block header_right %}
+                <div class="header-hbar-seg header-hbar-seg--profile">
+                <div class="header-right" id="header-signed-in-cluster" hidden>
+                    <button type="button" class="header-profile-menu-btn" id="header-profile-menu-btn" aria-expanded="false" aria-controls="header-profile-dropdown" aria-haspopup="true" title="Account menu">
+                        <span class="header-profile-avatar-frame">
+                            <img src="/static/person.svg" alt="" class="header-profile-avatar-img header-profile-avatar-img--placeholder" id="header-profile-avatar" width="32" height="32" decoding="async" onerror="this.onerror=null;this.src='/static/person.svg';this.classList.add('header-profile-avatar-img--placeholder');">
+                        </span>
+                    </button>
+                </div>
+                </div>
+                {% endblock %}
+                <div class="header-hbar-seg">
+                    <div class="header-login-slot" id="header-login-slot">
+                        <button type="button" class="header-login-btn" id="header-login-btn">Sign in</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-categories-dropdown" id="header-categories-dropdown" role="region" aria-label="Subcategories" hidden>
+        <div class="header-categories-panel header-categories-panel--subs-only">
+            <div class="header-categories-row header-categories-row--subs" id="header-categories-subs" role="none"></div>
+        </div>
+    </div>
+    <div class="header-profile-menu-dropdown-new" id="header-profile-dropdown" role="menu" aria-label="Account menu" hidden>
+        <a href="#" class="header-profile-menu-item-new" id="header-profile-link-profile" role="menuitem">Profile</a>
+        <a href="#" class="header-profile-menu-item-new" id="header-profile-link-settings" role="menuitem">Settings</a>
+        <button type="button" class="header-profile-menu-item-new" id="header-profile-menu-logout" role="menuitem">Logout</button>
+    </div>
+
+    <div class="header-mobile-nav-backdrop" id="header-mobile-nav-backdrop" hidden aria-hidden="true"></div>
+    <div class="mobile-cat-menu" id="mobile-cat-menu" hidden>
+        <div class="mobile-cat-menu__panels" id="mobile-cat-panels">
+            <div class="mobile-cat-menu__l1" id="mobile-cat-l1">
+                <div class="mobile-cat-menu__l1-hd">
+                    <span class="mobile-cat-menu__l1-hd-title">Categories</span>
+                    <button type="button" class="header-login-btn mobile-cat-menu__l1-hd-back" id="mobile-cat-l1-back" aria-label="Close menu">Back</button>
+                </div>
+                <a href="/all" class="mobile-cat-menu__all-cats-link mobile-cat-menu__all-cats-link--in-list" id="mobile-cat-all-cats-link">All</a>
+                <div class="mobile-cat-menu__l1-list" id="mobile-cat-l1-list"></div>
+            </div>
+            <div class="mobile-cat-menu__l2" id="mobile-cat-l2" hidden>
+                <div class="mobile-cat-menu__l2-hd">
+                    <span class="mobile-cat-menu__l1-hd-title" id="mobile-cat-l2-title"></span>
+                    <button type="button" class="header-login-btn mobile-cat-menu__l1-hd-back" id="mobile-cat-back" aria-label="Back to categories">Back</button>
+                </div>
+                <div class="mobile-cat-menu__l2-list" id="mobile-cat-l2-list"></div>
+            </div>
+        </div>
+        <div class="mobile-cat-menu__account" id="mobile-cat-account-row">
+            <div class="mobile-cat-menu__acct-loggedout" id="mobile-cat-acct-loggedout">
+                <button type="button" class="header-login-btn" id="mobile-cat-signin-btn">Sign in</button>
+                <div class="mobile-cat-menu__footer mobile-cat-menu__footer--in-account">
+                    <nav class="mobile-cat-menu__sitenav landing-site-links" aria-label="Site links">
+                        <a href="/" class="landing-site-links__a">Homepage</a>
+                        <span class="landing-site-links__dot" aria-hidden="true">·</span>
+                        <a href="/about" class="landing-site-links__a">About</a>
+                        <span class="landing-site-links__dot" aria-hidden="true">·</span>
+                        <a href="/about/contact" class="landing-site-links__a">Contact</a>
+                        <span class="landing-site-links__dot" aria-hidden="true">·</span>
+                        <a href="/about/faq" class="landing-site-links__a">FAQ</a>
+                    </nav>
+                </div>
+            </div>
+            <div class="mobile-cat-menu__acct-loggedin" id="mobile-cat-acct-loggedin" hidden>
+                <div class="mobile-cat-menu__acct-in">
+                    <section class="profile-v2-hero mobile-cat-menu__profile-v2-hero" aria-label="Your profile">
+                        <div class="profile-v2-hero__card">
+                            <div class="profile-v2-identity">
+                                <div class="profile-v2-avatar-shell profile-v2-avatar-shell--default" id="mobile-cat-avatar-shell">
+                                    <img src="/static/person.svg" alt="" class="profile-v2-avatar profile-v2-avatar--placeholder" id="mobile-cat-acct-avatar" width="96" height="96" decoding="async">
+                                </div>
+                                <div class="profile-v2-identity__main">
+                                    <h1 class="profile-v2-title" id="mobile-cat-profile-v2-heading">
+                                        <button type="button" class="profile-v2-copy-row" id="mobile-cat-profile-copy-row" aria-label="Copy profile page link" title="Copy link">
+                                            <span class="profile-v2-copy-row__icon profile-v2-copy-row__link" aria-hidden="true">
+                                                <svg class="profile-v2-copy-row__link-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path vector-effect="non-scaling-stroke" d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                                    <path vector-effect="non-scaling-stroke" d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                                                </svg>
+                                            </span>
+                                            <span class="profile-v2-copy-row__name" id="mobile-cat-profile-username"></span>
+                                        </button>
+                                    </h1>
+                                    <div class="profile-v2-meta" id="mobile-cat-profile-meta" hidden>
+                                        <div class="profile-v2-meta-bunch">
+                                            <div class="landing-category-card profile-v2-meta-tile profile-v2-meta-tile--joined">
+                                                <span class="profile-v2-meta-tile__inner">
+                                                    <img src="/static/logo-animated.svg" alt="" class="profile-v2-meta-tile__logo" width="20" height="20" decoding="async">
+                                                    <span id="mobile-cat-profile-joined-text"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <div class="mobile-cat-menu__footer mobile-cat-menu__footer--in-account">
+                        <nav class="mobile-cat-menu__sitenav landing-site-links" aria-label="Account links">
+                            <a href="/profile" class="landing-site-links__a" id="mobile-cat-acct-favorites-link">Profile</a>
+                            <span class="landing-site-links__dot" aria-hidden="true">·</span>
+                            <a href="/settings" class="landing-site-links__a" id="mobile-cat-acct-settings-link">Settings</a>
+                            <span class="landing-site-links__dot" aria-hidden="true">·</span>
+                            <a href="/logout" class="landing-site-links__a" id="mobile-cat-acct-logout">Log out</a>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-search-panel" id="header-search-panel" role="dialog" aria-modal="true" aria-label="Search" hidden>
+        <div class="header-search-panel__inner">
+            <label class="header-search-panel__label visually-hidden" for="header-search-input">Search products</label>
+            <div class="header-search-input-wrapper">
+                <input type="text" class="header-search-panel__input" id="header-search-input" name="q" placeholder="Search products…" autocomplete="off" enterkeyhint="search">
+                <button type="button" class="header-search-submit header-search-submit--magnifier" id="header-search-submit" title="Search" aria-label="Search">
+                    <img src="/static/search.svg" alt="" class="header-search-magnifier-icon" width="22" height="22" aria-hidden="true">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="login-modal-backdrop" id="login-modal-backdrop" hidden aria-hidden="true">
+        <div class="contribute-modal login-modal-shell" role="dialog" aria-modal="true" aria-labelledby="login-modal-title" id="login-modal-dialog" tabindex="-1">
+            <div class="contribute-modal-header">
+                <span class="contribute-modal-title" id="login-modal-title">Sign in</span>
+                <button type="button" class="contribute-modal-close" id="login-modal-close" aria-label="Close sign-in">✕</button>
+            </div>
+            <div class="contribute-modal-body">
+                <p class="login-modal-lead" id="login-modal-lead">Enter your email. We’ll send a 6-character code to sign in.</p>
+
+                <form class="login-modal-form" id="login-modal-email-form" novalidate autocomplete="on">
+                    <div class="form-group">
+                        <label for="login-modal-email">Email</label>
+                        <input type="email" id="login-modal-email" name="email" required autocomplete="username" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="you@example.com">
+                    </div>
+                    <p class="login-modal-status" id="login-modal-email-status" role="status" hidden></p>
+                    <div class="login-modal-actions">
+                        <button type="submit" class="login-modal-submit" id="login-modal-email-submit">Email me a code</button>
+                    </div>
+                </form>
+
+                <div class="login-modal-after-send" id="login-modal-after-send" hidden>
+                    <form class="login-modal-form" id="login-modal-code-form" novalidate>
+                        <div class="form-group">
+                            <label for="login-modal-code">Code from email</label>
+                            <input type="text" id="login-modal-code" name="one-time-code" required maxlength="6" minlength="6" autocomplete="one-time-code" inputmode="text" spellcheck="false" autocapitalize="characters" class="login-modal-code-input" aria-describedby="login-modal-code-hint">
+                        </div>
+                        <p class="login-modal-hint" id="login-modal-code-hint">Six letters or numbers, as shown in the message.</p>
+                        <p class="login-modal-status" id="login-modal-code-status" role="status" hidden></p>
+                        <div class="login-modal-actions">
+                            <button type="submit" class="login-modal-submit" id="login-modal-code-submit">Sign in</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="login-modal-username-step" id="login-modal-username-step" hidden>
+                    <p class="login-modal-lead" id="login-modal-username-lead">Welcome. Since it’s your first time, please enter your username.</p>
+                    <form class="login-modal-form" id="login-modal-username-form" novalidate autocomplete="off">
+                        <div class="form-group">
+                            <label for="login-modal-username">Username</label>
+                            <input type="text" id="login-modal-username" name="username" required maxlength="30" minlength="3" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="your_name">
+                        </div>
+                        <p class="login-modal-hint" id="login-modal-username-hint">3–30 characters: start with a letter; then letters, numbers, or underscores. Lowercase only.</p>
+                        <p class="login-modal-status" id="login-modal-username-status" role="status" hidden></p>
+                        <div class="login-modal-actions">
+                            <button type="submit" class="login-modal-submit" id="login-modal-username-submit">Continue</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% block content %}{% endblock %}
+
+    <script>
+    (function () {
+        /** Shared in-flight / resolved JSON for `/api/categories` — one network call per page regardless of header + menu hooks. */
+        var tabbedCategoriesFetchPromise = null;
+        function tabbedFetchCategoriesJsonOnce() {
+            if (!tabbedCategoriesFetchPromise) {
+                tabbedCategoriesFetchPromise = fetch('/api/categories', {
+                    cache: 'no-store',
+                    headers: { Accept: 'application/json' },
+                }).then(function (r) {
+                    return r.ok ? r.json() : { categories: [] };
+                });
+            }
+            return tabbedCategoriesFetchPromise;
+        }
+        window.tabbedFetchCategoriesJsonOnce = tabbedFetchCategoriesJsonOnce;
+
+        function tabbedSubcategoryUrlPath(mainSlug, s) {
+            if (s && s.path != null && String(s.path).trim() !== '') return String(s.path);
+            const cs = s && s.slug != null ? String(s.slug) : '';
+            const p = mainSlug + '-';
+            return cs.startsWith(p) ? cs.slice(p.length) : cs;
+        }
+
+        function normalizeCategoryTree(raw) {
+            if (!Array.isArray(raw)) return [];
+            const out = [];
+            raw.forEach((c) => {
+                if (!c || c.slug == null || c.name == null) return;
+                const slug = String(c.slug);
+                const name = String(c.name);
+                const subsRaw = c.subcategories;
+                const subcategories = [];
+                if (Array.isArray(subsRaw)) {
+                    subsRaw.forEach((s) => {
+                        if (!s || s.slug == null || s.name == null) return;
+                        const path = tabbedSubcategoryUrlPath(slug, s);
+                        subcategories.push({ slug: String(s.slug), name: String(s.name), path: path });
+                    });
+                }
+                out.push({ slug: slug, name: name, subcategories: subcategories });
+            });
+            return out;
+        }
+
+        function renderHeaderCategoriesMainsRow(mainsEl, tree) {
+            if (!mainsEl) return;
+            mainsEl.innerHTML = '';
+            const allCatsA = document.createElement('a');
+            allCatsA.href = '/all';
+            allCatsA.textContent = 'All';
+            allCatsA.className = 'header-category-main header-category-main--all';
+            allCatsA.setAttribute('role', 'menuitem');
+            mainsEl.appendChild(allCatsA);
+            tree.forEach((cat) => {
+                const a = document.createElement('a');
+                a.href = '/' + encodeURIComponent(cat.slug);
+                a.textContent = cat.name;
+                a.className = 'header-category-main';
+                a.setAttribute('role', 'menuitem');
+                a.setAttribute('data-main-slug', cat.slug);
+                a.setAttribute('data-subcategories', JSON.stringify(cat.subcategories || []));
+                mainsEl.appendChild(a);
+            });
+        }
+
+        function fillHeaderCategoriesIfEmpty() {
+            const mainsEl = document.getElementById('header-categories-mains');
+            if (!mainsEl || mainsEl.querySelector('a.header-category-main:not(.header-category-main--all)')) return;
+            tabbedFetchCategoriesJsonOnce()
+                .then((data) => {
+                    const raw = data && Array.isArray(data.categories) ? data.categories : [];
+                    const tree = normalizeCategoryTree(raw);
+                    if (!tree.length) return;
+                    renderHeaderCategoriesMainsRow(mainsEl, tree);
+                    const blob = document.getElementById('tabbed-nav-categories-json');
+                    if (blob) blob.textContent = JSON.stringify(tree);
+                })
+                .catch(function () {});
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fillHeaderCategoriesIfEmpty);
+        } else {
+            fillHeaderCategoriesIfEmpty();
+        }
+    })();
+    </script>
+
+    <script>
+    (function () {
+        function getContributorCookie() {
+            const m = document.cookie.match(/tabbed_contributor_username=([^;]+)/);
+            return m ? decodeURIComponent(m[1]).trim() : '';
+        }
+
+        function tabbedSubcategoryUrlPath(mainSlug, s) {
+            if (s && s.path != null && String(s.path).trim() !== '') return String(s.path);
+            const ms = (mainSlug || '').trim();
+            const cs = s && s.slug != null ? String(s.slug) : '';
+            const p = ms + '-';
+            return cs.startsWith(p) ? cs.slice(p.length) : cs;
+        }
+
+        function syncHeaderProfileHrefs() {
+            const u = getContributorCookie();
+            const profileItem = document.getElementById('header-profile-link-profile');
+            const settingsItem = document.getElementById('header-profile-link-settings');
+            if (!u) {
+                if (profileItem) profileItem.setAttribute('href', '#');
+                if (settingsItem) settingsItem.setAttribute('href', '#');
+                return;
+            }
+            const base = '/user/' + encodeURIComponent(u);
+            if (profileItem) profileItem.setAttribute('href', base);
+            if (settingsItem) settingsItem.setAttribute('href', base + '/settings');
+        }
+
+        function tabbedDefaultProfileAvatarUrl() {
+            return '/static/person.svg';
+        }
+
+        function tabbedAvatarUrlForUsername(username) {
+            const u = (username || '').trim();
+            if (!u) return tabbedDefaultProfileAvatarUrl();
+            return '/api/users/' + encodeURIComponent(u) + '/avatar';
+        }
+
+        function syncHeaderAvatarPlaceholderClass(img) {
+            if (!img) return;
+            const src = (img.currentSrc || img.src || '').split('?')[0];
+            const isPlaceholder =
+                src.indexOf('/person.svg') !== -1 || src.indexOf('/logo-animated.svg') !== -1;
+            img.classList.toggle('header-profile-avatar-img--placeholder', isPlaceholder);
+        }
+
+        function syncHeaderProfileAvatar() {
+            const u = getContributorCookie();
+            const img = document.getElementById('header-profile-avatar');
+            const menuBtn = document.getElementById('header-profile-menu-btn');
+            if (img) {
+                img.onload = function () {
+                    syncHeaderAvatarPlaceholderClass(img);
+                };
+                img.src = tabbedAvatarUrlForUsername(u);
+                if (img.complete) {
+                    syncHeaderAvatarPlaceholderClass(img);
+                }
+            }
+            if (menuBtn) {
+                menuBtn.setAttribute('aria-label', u ? 'Account menu (' + u + ')' : 'Account menu');
+            }
+        }
+
+        function prefersHeaderReducedMotion() {
+            return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+
+        function openHeaderDropdownPanel(el) {
+            if (!el) return;
+            el.removeAttribute('hidden');
+            el.classList.remove('is-open');
+            void el.offsetHeight;
+            if (prefersHeaderReducedMotion()) {
+                el.classList.add('is-open');
+                return;
+            }
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    el.classList.add('is-open');
+                });
+            });
+        }
+
+        function closeHeaderDropdownPanel(el, onDone) {
+            if (!el) {
+                if (onDone) onDone();
+                return;
+            }
+            if (el.hasAttribute('hidden')) {
+                el.classList.remove('is-open');
+                if (onDone) onDone();
+                return;
+            }
+            if (!el.classList.contains('is-open')) {
+                el.setAttribute('hidden', '');
+                if (onDone) onDone();
+                return;
+            }
+            if (prefersHeaderReducedMotion()) {
+                el.classList.remove('is-open');
+                el.setAttribute('hidden', '');
+                if (onDone) onDone();
+                return;
+            }
+            el.classList.remove('is-open');
+            var finished = false;
+            function done() {
+                if (finished) return;
+                finished = true;
+                el.removeEventListener('transitionend', onTransitionEnd);
+                window.clearTimeout(tid);
+                el.setAttribute('hidden', '');
+                el.classList.remove('is-open');
+                if (onDone) onDone();
+            }
+            function onTransitionEnd(e) {
+                if (e.target !== el) return;
+                if (e.propertyName !== 'opacity' && e.propertyName !== 'transform') return;
+                done();
+            }
+            el.addEventListener('transitionend', onTransitionEnd);
+            var tid = window.setTimeout(done, 480);
+        }
+
+        let headerCategoriesCloseTimer = null;
+        /** When true (opened via click on a main category), ignore mouseleave auto-close until click-away or explicit close. */
+        let headerCategoriesPinnedByClick = false;
+        function cancelHeaderCategoriesCloseTimer() {
+            if (headerCategoriesCloseTimer) {
+                window.clearTimeout(headerCategoriesCloseTimer);
+                headerCategoriesCloseTimer = null;
+            }
+        }
+        function scheduleHeaderCategoriesClose() {
+            if (headerCategoriesPinnedByClick) return;
+            cancelHeaderCategoriesCloseTimer();
+            headerCategoriesCloseTimer = window.setTimeout(function () {
+                headerCategoriesCloseTimer = null;
+                closeHeaderCategoriesMenu();
+            }, 240);
+        }
+
+        function closeHeaderCategoriesMenu() {
+            headerCategoriesPinnedByClick = false;
+            cancelHeaderCategoriesCloseTimer();
+            const categoriesDropdown = document.getElementById('header-categories-dropdown');
+            const subsRow = document.getElementById('header-categories-subs');
+            const mainsRow = document.getElementById('header-categories-mains');
+            closeHeaderDropdownPanel(categoriesDropdown);
+            if (subsRow) {
+                subsRow.innerHTML = '';
+                subsRow.classList.remove('header-categories-subs--open');
+            }
+            if (mainsRow) {
+                mainsRow.querySelectorAll('.header-category-main.is-active').forEach((el) => {
+                    el.classList.remove('is-active');
+                });
+            }
+        }
+
+        function closeHeaderProfileMenu() {
+            const dd = document.getElementById('header-profile-dropdown');
+            const btn = document.getElementById('header-profile-menu-btn');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+            closeHeaderDropdownPanel(dd);
+        }
+
+        function navCategoryTreeLooksIncomplete() {
+            const blob = document.getElementById('tabbed-nav-categories-json');
+            if (!blob || !blob.textContent || !blob.textContent.trim()) return true;
+            try {
+                const t = JSON.parse(blob.textContent);
+                if (!Array.isArray(t) || t.length === 0) return true;
+                const anySubs = t.some(
+                    (c) =>
+                        c &&
+                        typeof c === 'object' &&
+                        Array.isArray(c.subcategories) &&
+                        c.subcategories.length > 0,
+                );
+                return !anySubs;
+            } catch (err) {
+                return true;
+            }
+        }
+
+        function syncHeaderCategoriesPanelFromApi() {
+            return (window.tabbedFetchCategoriesJsonOnce || function () {
+                return fetch('/api/categories', {
+                    cache: 'no-store',
+                    headers: { Accept: 'application/json' },
+                }).then((r) => (r.ok ? r.json() : { categories: [] }));
+            })()
+                .then((data) => {
+                    const raw = Array.isArray(data.categories) ? data.categories : [];
+                    const tree = raw.map((c) => normalizeHeaderCategoryTreeItem(c)).filter(Boolean);
+                    const blob = document.getElementById('tabbed-nav-categories-json');
+                    if (blob) blob.textContent = JSON.stringify(tree);
+                    const mainsEl = document.getElementById('header-categories-mains');
+                    if (mainsEl && tree.length) renderHeaderCategoriesFromApiTree(tree);
+                });
+        }
+
+        function ensureHeaderCategoryPanelFresh() {
+            if (!navCategoryTreeLooksIncomplete()) return;
+            syncHeaderCategoriesPanelFromApi().catch(function () {});
+        }
+
+        function openHeaderCategoriesSubsPanel() {
+            const categoriesDropdown = document.getElementById('header-categories-dropdown');
+            if (!categoriesDropdown || categoriesDropdown.classList.contains('is-open')) return;
+            closeTabbedMobileNavDrawer();
+            closeHeaderSearchPanel();
+            closeHeaderProfileMenu();
+            cancelHeaderCategoriesCloseTimer();
+            openHeaderDropdownPanel(categoriesDropdown);
+            queueMicrotask(function () {
+                syncHeaderCategoriesPanelFromApi().catch(function () {});
+            });
+        }
+
+        function normalizeHeaderCategoryTreeItem(c) {
+            if (!c || typeof c !== 'object' || c.slug == null || c.name == null) return null;
+            const slug = String(c.slug);
+            const name = String(c.name);
+            const subsRaw = c.subcategories;
+            const subcategories = [];
+            if (Array.isArray(subsRaw)) {
+                subsRaw.forEach((s) => {
+                    if (!s || s.slug == null || s.name == null) return;
+                    const path = tabbedSubcategoryUrlPath(slug, s);
+                    subcategories.push({ slug: String(s.slug), name: String(s.name), path: path });
+                });
+            }
+            return { slug: slug, name: name, subcategories: subcategories };
+        }
+
+        function readNavCategoriesFromPageJson() {
+            const el = document.getElementById('tabbed-nav-categories-json');
+            if (!el || !el.textContent) return [];
+            try {
+                const parsed = JSON.parse(el.textContent);
+                if (!Array.isArray(parsed)) return [];
+                return parsed
+                    .map((c) => normalizeHeaderCategoryTreeItem(c))
+                    .filter(Boolean);
+            } catch (e) {
+                return [];
+            }
+        }
+
+        /** When the path is /all, highlight &quot;All&quot; as the default main (shop-wide catalog page). */
+        function tabbedApplyHeaderCategoryActiveFromUrl() {
+            const mainsEl = document.getElementById('header-categories-mains');
+            if (!mainsEl) return;
+            const raw = (window.location.pathname || '').replace(/\/+$/, '') || '/';
+            if (raw !== '/all') return;
+            mainsEl.querySelectorAll('a.header-category-main.is-active').forEach(function (el) {
+                el.classList.remove('is-active');
+            });
+            const allLink = mainsEl.querySelector('a.header-category-main--all');
+            if (allLink) allLink.classList.add('is-active');
+        }
+        window.tabbedApplyHeaderCategoryActiveFromUrl = tabbedApplyHeaderCategoryActiveFromUrl;
+
+        function renderHeaderCategoriesFromApiTree(tree) {
+            const mainsEl = document.getElementById('header-categories-mains');
+            const subsEl = document.getElementById('header-categories-subs');
+            const categoriesDropdown = document.getElementById('header-categories-dropdown');
+            if (!mainsEl) return;
+
+            /* `hidden` is cleared synchronously when opening; `is-open` is added on the next frames — use hidden so a fast API response does not wipe subs. */
+            const preserveSubsStrip =
+                categoriesDropdown && !categoriesDropdown.hasAttribute('hidden');
+            const activeMain = mainsEl.querySelector('.header-category-main.is-active');
+            const activeSlug = activeMain
+                ? (activeMain.getAttribute('data-main-slug') || '').trim()
+                : '';
+
+            mainsEl.innerHTML = '';
+            if (subsEl && !preserveSubsStrip) {
+                subsEl.innerHTML = '';
+                subsEl.classList.remove('header-categories-subs--open');
+            }
+            if (!tree || !tree.length) {
+                mainsEl.innerHTML =
+                    '<p class="header-categories-empty" role="status">No categories yet.</p>';
+                if (subsEl) {
+                    subsEl.innerHTML = '';
+                    subsEl.classList.remove('header-categories-subs--open');
+                }
+                return;
+            }
+            const allCatsA = document.createElement('a');
+            allCatsA.href = '/all';
+            allCatsA.textContent = 'All';
+            allCatsA.className = 'header-category-main header-category-main--all';
+            allCatsA.setAttribute('role', 'menuitem');
+            mainsEl.appendChild(allCatsA);
+            tree.forEach((cat) => {
+                const a = document.createElement('a');
+                a.href = '/' + encodeURIComponent(cat.slug);
+                a.textContent = cat.name;
+                a.className = 'header-category-main';
+                a.setAttribute('role', 'menuitem');
+                a.setAttribute('data-main-slug', cat.slug);
+                a.setAttribute('data-subcategories', JSON.stringify(cat.subcategories || []));
+                mainsEl.appendChild(a);
+            });
+
+            if (preserveSubsStrip && activeSlug && subsEl) {
+                const link = Array.from(mainsEl.querySelectorAll('a.header-category-main')).find(
+                    (a) => (a.getAttribute('data-main-slug') || '').trim() === activeSlug,
+                );
+                if (link) {
+                    headerCategoriesActivateMainLink(link);
+                } else {
+                    subsEl.innerHTML = '';
+                    subsEl.classList.remove('header-categories-subs--open');
+                }
+            } else if (subsEl && preserveSubsStrip && !activeSlug) {
+                subsEl.innerHTML = '';
+                subsEl.classList.remove('header-categories-subs--open');
+            }
+            /* On /all, do not run URL styling while the mega menu is open — syncHeaderCategoriesPanelFromApi
+               runs from openHeaderCategoriesSubsPanel; applying /all used to close/clear subs and broke dropdowns. */
+            if (!preserveSubsStrip) {
+                tabbedApplyHeaderCategoryActiveFromUrl();
+            }
+        }
+
+        function parseSubsFromDataAttr(link) {
+            if (!link) return [];
+            const raw = link.getAttribute('data-subcategories');
+            if (!raw || !raw.trim()) return [];
+            try {
+                const parsed = JSON.parse(raw);
+                if (!Array.isArray(parsed)) return [];
+                const mainSlug = (link.getAttribute('data-main-slug') || '').trim();
+                return parsed
+                    .filter((s) => s && s.slug != null && s.name != null)
+                    .map((s) => ({
+                        slug: String(s.slug),
+                        name: String(s.name),
+                        path: tabbedSubcategoryUrlPath(mainSlug, s),
+                    }));
+            } catch (err) {
+                return [];
+            }
+        }
+
+        function headerCategoriesActivateMainLink(link) {
+            if (!link || !link.classList.contains('header-category-main')) return;
+            if (link.classList.contains('header-category-main--all')) {
+                cancelHeaderCategoriesCloseTimer();
+                headerCategoriesPinnedByClick = false;
+                closeHeaderCategoriesMenu();
+                link.classList.add('is-active');
+                return;
+            }
+            const slug = (link.getAttribute('data-main-slug') || '').trim();
+            let subs = parseSubsFromDataAttr(link);
+            if (!subs.length && slug) {
+                const tree = readNavCategoriesFromPageJson();
+                const main = tree.find((c) => c.slug === slug);
+                subs = (main && main.subcategories) || [];
+            }
+            const subsRow = document.getElementById('header-categories-subs');
+            const mainsRow = document.getElementById('header-categories-mains');
+            if (mainsRow) {
+                mainsRow.querySelectorAll('.header-category-main.is-active').forEach((el) => {
+                    el.classList.remove('is-active');
+                });
+                link.classList.add('is-active');
+            }
+            if (!subsRow) return;
+            if (!slug) {
+                subsRow.innerHTML = '';
+                subsRow.classList.remove('header-categories-subs--open');
+                return;
+            }
+
+            function renderSubsLinksIntoRow(row, mainSlug, subList) {
+                row.innerHTML = '';
+                const allA = document.createElement('a');
+                allA.href = '/' + encodeURIComponent(mainSlug);
+                allA.textContent = 'All';
+                allA.className = 'header-category-sub header-category-sub--all';
+                allA.setAttribute('role', 'menuitem');
+                row.appendChild(allA);
+                subList.forEach((s) => {
+                    const a = document.createElement('a');
+                    const seg = s.path || tabbedSubcategoryUrlPath(mainSlug, s);
+                    a.href = '/' + encodeURIComponent(mainSlug) + '/' + encodeURIComponent(seg);
+                    a.textContent = s.name;
+                    a.className = 'header-category-sub';
+                    a.setAttribute('role', 'menuitem');
+                    row.appendChild(a);
+                });
+                row.scrollLeft = 0;
+            }
+
+            function fillSubsAndOpen() {
+                renderSubsLinksIntoRow(subsRow, slug, subs);
+                void subsRow.offsetHeight;
+                if (prefersHeaderReducedMotion()) {
+                    subsRow.classList.add('header-categories-subs--open');
+                    return;
+                }
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(function () {
+                        subsRow.classList.add('header-categories-subs--open');
+                    });
+                });
+            }
+
+            /* Subs strip already open: swap links only — no collapse/expand animation */
+            if (subsRow.classList.contains('header-categories-subs--open')) {
+                renderSubsLinksIntoRow(subsRow, slug, subs);
+                return;
+            }
+
+            fillSubsAndOpen();
+        }
+
+        function buildHeaderCategoriesDropdown() {
+            const mainsEl = document.getElementById('header-categories-mains');
+            if (!mainsEl) return;
+
+            mainsEl.innerHTML =
+                '<p class="header-categories-loading" role="status">Updating categories…</p>';
+
+            (window.tabbedFetchCategoriesJsonOnce || function () {
+                return fetch('/api/categories', { cache: 'no-store' }).then((r) =>
+                    r.ok ? r.json() : { categories: [] },
+                );
+            })()
+                .then((data) => {
+                    const raw = Array.isArray(data.categories) ? data.categories : [];
+                    const tree = raw.map((c) => normalizeHeaderCategoryTreeItem(c)).filter(Boolean);
+                    renderHeaderCategoriesFromApiTree(tree);
+                    const blob = document.getElementById('tabbed-nav-categories-json');
+                    if (blob) blob.textContent = JSON.stringify(tree);
+                })
+                .catch(() => {
+                    mainsEl.innerHTML =
+                        '<p class="header-categories-empty" role="status">Could not load categories.</p>';
+                    const subsEl = document.getElementById('header-categories-subs');
+                    if (subsEl) {
+                        subsEl.innerHTML = '';
+                        subsEl.classList.remove('header-categories-subs--open');
+                    }
+                });
+        }
+
+        const categoriesMega = document.getElementById('header-categories-mega');
+        const categoriesDropdown = document.getElementById('header-categories-dropdown');
+        const categoriesMainsEl = document.getElementById('header-categories-mains');
+
+        function headerCategoriesPointerOnMain(link) {
+            if (!link) return;
+            if (link.classList.contains('header-category-main--all')) {
+                cancelHeaderCategoriesCloseTimer();
+                headerCategoriesPinnedByClick = false;
+                closeHeaderCategoriesMenu();
+                link.classList.add('is-active');
+                return;
+            }
+            cancelHeaderCategoriesCloseTimer();
+            if (!categoriesDropdown.classList.contains('is-open')) {
+                openHeaderCategoriesSubsPanel();
+            }
+            headerCategoriesActivateMainLink(link);
+        }
+
+        if (categoriesMainsEl) {
+            categoriesMainsEl.addEventListener('mouseover', function (e) {
+                const link = e.target.closest('a.header-category-main');
+                if (!link || !categoriesMainsEl.contains(link)) return;
+                headerCategoriesPinnedByClick = false;
+                headerCategoriesPointerOnMain(link);
+            });
+            categoriesMainsEl.addEventListener('click', function (e) {
+                const link = e.target.closest('a.header-category-main');
+                if (!link || !categoriesMainsEl.contains(link)) return;
+                if (link.classList.contains('header-category-main--all')) {
+                    if (categoriesDropdown) closeHeaderCategoriesMenu();
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                if (
+                    categoriesDropdown.classList.contains('is-open') &&
+                    link.classList.contains('is-active')
+                ) {
+                    closeHeaderCategoriesMenu();
+                    return;
+                }
+                headerCategoriesPinnedByClick = true;
+                headerCategoriesPointerOnMain(link);
+            });
+        }
+
+        if (categoriesMega) {
+            categoriesMega.addEventListener('mouseleave', function () {
+                scheduleHeaderCategoriesClose();
+            });
+            categoriesMega.addEventListener('mouseenter', function () {
+                cancelHeaderCategoriesCloseTimer();
+            });
+        }
+
+        if (categoriesDropdown) {
+            categoriesDropdown.addEventListener('mouseenter', function () {
+                cancelHeaderCategoriesCloseTimer();
+            });
+            categoriesDropdown.addEventListener('mouseleave', function () {
+                scheduleHeaderCategoriesClose();
+            });
+            categoriesDropdown.addEventListener('click', function (e) {
+                const link = e.target.closest('a[href]');
+                if (link) closeHeaderCategoriesMenu();
+            });
+        }
+
+        if (categoriesMega && categoriesDropdown) {
+            document.addEventListener('click', function (e) {
+                if (
+                    categoriesDropdown.classList.contains('is-open') &&
+                    !categoriesDropdown.contains(e.target) &&
+                    !categoriesMega.contains(e.target)
+                ) {
+                    closeHeaderCategoriesMenu();
+                }
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape') return;
+                if (!categoriesDropdown.classList.contains('is-open')) return;
+                closeHeaderCategoriesMenu();
+                const searchNav = document.getElementById('header-search-nav-btn');
+                if (searchNav) searchNav.focus();
+            });
+        }
+
+        const profileMenuBtn = document.getElementById('header-profile-menu-btn');
+        const profileDropdown = document.getElementById('header-profile-dropdown');
+        const profileLogoutBtn = document.getElementById('header-profile-menu-logout');
+        if (profileMenuBtn && profileDropdown) {
+            profileMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (profileDropdown.classList.contains('is-open')) {
+                    closeHeaderProfileMenu();
+                    return;
+                }
+                closeTabbedMobileNavDrawer();
+                closeHeaderSearchPanel();
+                closeHeaderCategoriesMenu();
+                openHeaderDropdownPanel(profileDropdown);
+                profileMenuBtn.setAttribute('aria-expanded', 'true');
+            });
+            profileDropdown.addEventListener('click', (e) => {
+                const link = e.target.closest('a[href]');
+                if (link && link.getAttribute('href') && link.getAttribute('href') !== '#') {
+                    closeHeaderProfileMenu();
+                }
+            });
+            document.addEventListener('click', (e) => {
+                if (
+                    profileDropdown.classList.contains('is-open') &&
+                    !profileDropdown.contains(e.target) &&
+                    e.target !== profileMenuBtn &&
+                    !profileMenuBtn.contains(e.target)
+                ) {
+                    closeHeaderProfileMenu();
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && profileDropdown.classList.contains('is-open')) {
+                    closeHeaderProfileMenu();
+                    profileMenuBtn.focus();
+                }
+            });
+        }
+        if (profileLogoutBtn) {
+            profileLogoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                try {
+                    const u = getContributorCookie();
+                    if (u) sessionStorage.setItem('tabbed_logout_toast', u);
+                } catch (err) {}
+                document.cookie = 'tabbed_contributor_username=; path=/; max-age=0';
+                window.location.href = '/logout';
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function tabbedOnDomReadyHeaderNav() {
+                ensureHeaderCategoryPanelFresh();
+                tabbedApplyHeaderCategoryActiveFromUrl();
+            });
+        } else {
+            ensureHeaderCategoryPanelFresh();
+            tabbedApplyHeaderCategoryActiveFromUrl();
+        }
+
+        window.TabbedSyncHeaderCategoryNav = buildHeaderCategoriesDropdown;
+
+        const loginSlot = document.getElementById('header-login-slot');
+        const signedInCluster = document.getElementById('header-signed-in-cluster');
+
+        function applyHeaderAuthVisibility() {
+            const u = getContributorCookie();
+            const root = document.documentElement;
+            if (u) {
+                root.classList.remove('tabbed-auth-logged-out');
+                if (loginSlot) loginSlot.setAttribute('hidden', '');
+                if (signedInCluster) signedInCluster.removeAttribute('hidden');
+                syncHeaderProfileHrefs();
+                syncHeaderProfileAvatar();
+            } else {
+                root.classList.add('tabbed-auth-logged-out');
+                if (loginSlot) loginSlot.removeAttribute('hidden');
+                if (signedInCluster) signedInCluster.setAttribute('hidden', '');
+                syncHeaderProfileHrefs();
+            }
+        }
+
+        applyHeaderAuthVisibility();
+
+        const loginModalBackdrop = document.getElementById('login-modal-backdrop');
+        const loginModalDialog = document.getElementById('login-modal-dialog');
+        const headerLoginBtn = document.getElementById('header-login-btn');
+        const loginModalClose = document.getElementById('login-modal-close');
+        const loginModalEmailForm = document.getElementById('login-modal-email-form');
+        const loginModalLead = document.getElementById('login-modal-lead');
+        const loginModalAfterSend = document.getElementById('login-modal-after-send');
+        const LOGIN_MODAL_LEAD_INITIAL = 'Enter your email. We’ll send a 6-character code to sign in.';
+        const LOGIN_MODAL_LEAD_SENT =
+            'Check your email (and junk folder) for your 6-character code from noreply@tabbed.shop.';
+        let loginModalPendingEmail = '';
+        const loginModalEmail = document.getElementById('login-modal-email');
+        const loginModalEmailStatus = document.getElementById('login-modal-email-status');
+        const loginModalEmailSubmit = document.getElementById('login-modal-email-submit');
+        const loginModalCodeForm = document.getElementById('login-modal-code-form');
+        const loginModalCode = document.getElementById('login-modal-code');
+        const loginModalCodeStatus = document.getElementById('login-modal-code-status');
+        const loginModalCodeSubmit = document.getElementById('login-modal-code-submit');
+        const loginModalUsernameStep = document.getElementById('login-modal-username-step');
+        const loginModalUsernameForm = document.getElementById('login-modal-username-form');
+        const loginModalUsername = document.getElementById('login-modal-username');
+        const loginModalUsernameStatus = document.getElementById('login-modal-username-status');
+        const loginModalUsernameSubmit = document.getElementById('login-modal-username-submit');
+
+        function showLoginModalUsernameStep() {
+            if (loginModalLead) loginModalLead.hidden = true;
+            if (loginModalEmailForm) loginModalEmailForm.hidden = true;
+            if (loginModalAfterSend) loginModalAfterSend.hidden = true;
+            if (loginModalUsernameStep) loginModalUsernameStep.hidden = false;
+        }
+
+        function loginModalFormatApiError(data) {
+            if (!data || data.detail == null) return 'Something went wrong. Try again.';
+            const d = data.detail;
+            if (typeof d === 'string') return d;
+            if (Array.isArray(d) && d.length) {
+                return d.map((x) => (x && x.msg) || '').filter(Boolean).join(' ') || 'Invalid input.';
+            }
+            return 'Something went wrong. Try again.';
+        }
+
+        function loginModalShowStatus(el, text, isError) {
+            if (!el) return;
+            el.textContent = text || '';
+            el.hidden = !text;
+            el.classList.toggle('login-modal-status--error', !!isError);
+            el.classList.toggle('login-modal-status--ok', !!text && !isError);
+        }
+
+        function resetLoginModalForms() {
+            loginModalPendingEmail = '';
+            if (loginModalLead) {
+                loginModalLead.hidden = false;
+                loginModalLead.textContent = LOGIN_MODAL_LEAD_INITIAL;
+            }
+            if (loginModalEmailForm) loginModalEmailForm.hidden = false;
+            if (loginModalAfterSend) loginModalAfterSend.hidden = true;
+            if (loginModalUsernameStep) loginModalUsernameStep.hidden = true;
+            if (loginModalEmail) loginModalEmail.value = '';
+            if (loginModalCode) loginModalCode.value = '';
+            if (loginModalUsername) loginModalUsername.value = '';
+            loginModalShowStatus(loginModalEmailStatus, '', false);
+            loginModalShowStatus(loginModalCodeStatus, '', false);
+            loginModalShowStatus(loginModalUsernameStatus, '', false);
+        }
+
+        function closeLoginModal() {
+            if (!loginModalBackdrop || loginModalBackdrop.hidden) return;
+            loginModalBackdrop.setAttribute('hidden', '');
+            loginModalBackdrop.setAttribute('aria-hidden', 'true');
+            resetLoginModalForms();
+        }
+
+        function openLoginModal() {
+            if (!loginModalBackdrop) return;
+            closeTabbedMobileNavDrawer();
+            closeHeaderSearchPanel();
+            closeHeaderCategoriesMenu();
+            closeHeaderProfileMenu();
+            resetLoginModalForms();
+            loginModalBackdrop.removeAttribute('hidden');
+            loginModalBackdrop.setAttribute('aria-hidden', 'false');
+            queueMicrotask(() => {
+                if (loginModalEmail) loginModalEmail.focus();
+            });
+        }
+
+        function openLoginModalFinishUsername() {
+            if (!loginModalBackdrop) return;
+            closeTabbedMobileNavDrawer();
+            closeHeaderSearchPanel();
+            closeHeaderCategoriesMenu();
+            closeHeaderProfileMenu();
+            resetLoginModalForms();
+            loginModalBackdrop.removeAttribute('hidden');
+            loginModalBackdrop.setAttribute('aria-hidden', 'false');
+            showLoginModalUsernameStep();
+            queueMicrotask(() => {
+                if (loginModalUsername) loginModalUsername.focus();
+            });
+        }
+
+        function tryOpenSigninFromQuery() {
+            let signinMsg = '';
+            let finishUsername = false;
+            try {
+                const p = new URLSearchParams(window.location.search);
+                signinMsg = (p.get('signin_msg') || '').trim();
+                finishUsername = p.get('finish_username') === '1';
+                const openSignin = p.get('signin') === '1' || !!signinMsg || finishUsername;
+                if (!openSignin) return;
+                if (getContributorCookie() && !finishUsername) return;
+                p.delete('signin');
+                p.delete('signin_msg');
+                p.delete('finish_username');
+                const q = p.toString();
+                const path = window.location.pathname + (q ? '?' + q : '') + window.location.hash;
+                window.history.replaceState({}, '', path || '/');
+            } catch (_) { /* ignore */ }
+            if (finishUsername) {
+                openLoginModalFinishUsername();
+                return;
+            }
+            openLoginModal();
+            if (signinMsg === 'invalid_link') {
+                loginModalShowStatus(
+                    loginModalEmailStatus,
+                    'That sign-in link is invalid or has expired. Request a new code below.',
+                    true,
+                );
+            }
+        }
+
+        if (headerLoginBtn && loginModalBackdrop) {
+            headerLoginBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openLoginModal();
+            });
+        }
+        if (loginModalClose) {
+            loginModalClose.addEventListener('click', () => closeLoginModal());
+        }
+        if (loginModalBackdrop) {
+            loginModalBackdrop.addEventListener('click', (e) => {
+                if (e.target === loginModalBackdrop) closeLoginModal();
+            });
+        }
+        if (loginModalDialog) {
+            loginModalDialog.addEventListener('click', (e) => e.stopPropagation());
+        }
+
+        if (loginModalEmailForm && loginModalEmail && loginModalEmailSubmit) {
+            loginModalEmailForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                loginModalShowStatus(loginModalEmailStatus, '', false);
+                const email = (loginModalEmail.value || '').trim();
+                if (!email) {
+                    loginModalShowStatus(loginModalEmailStatus, 'Please enter your email.', true);
+                    return;
+                }
+                loginModalEmailSubmit.disabled = true;
+                try {
+                    const res = await fetch('/api/auth/send-sign-in-link', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        loginModalShowStatus(loginModalEmailStatus, loginModalFormatApiError(data), true);
+                        return;
+                    }
+                    loginModalPendingEmail = email;
+                    if (loginModalLead) loginModalLead.textContent = LOGIN_MODAL_LEAD_SENT;
+                    if (loginModalEmailForm) loginModalEmailForm.hidden = true;
+                    if (loginModalAfterSend) loginModalAfterSend.hidden = false;
+                    queueMicrotask(() => {
+                        if (loginModalCode) loginModalCode.focus();
+                    });
+                } catch (_) {
+                    loginModalShowStatus(loginModalEmailStatus, 'Network error. Try again.', true);
+                } finally {
+                    loginModalEmailSubmit.disabled = false;
+                }
+            });
+        }
+
+        if (loginModalCode) {
+            loginModalCode.addEventListener('input', () => {
+                const u = (loginModalCode.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+                if (u !== loginModalCode.value) loginModalCode.value = u;
+            });
+        }
+
+        if (loginModalCodeForm && loginModalCode && loginModalCodeSubmit) {
+            loginModalCodeForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                loginModalShowStatus(loginModalCodeStatus, '', false);
+                const email = (loginModalPendingEmail || '').trim();
+                const code = (loginModalCode.value || '').trim().toUpperCase();
+                if (!email) {
+                    loginModalShowStatus(loginModalCodeStatus, 'Request a code first with your email.', true);
+                    return;
+                }
+                if (code.length !== 6) {
+                    loginModalShowStatus(loginModalCodeStatus, 'Enter the full 6-character code.', true);
+                    return;
+                }
+                loginModalCodeSubmit.disabled = true;
+                try {
+                    const res = await fetch('/api/auth/verify-sign-in-code', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, code }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        loginModalShowStatus(loginModalCodeStatus, loginModalFormatApiError(data), true);
+                        return;
+                    }
+                    if (data.needs_username) {
+                        showLoginModalUsernameStep();
+                        queueMicrotask(() => {
+                            if (loginModalUsername) loginModalUsername.focus();
+                        });
+                        return;
+                    }
+                    window.location.reload();
+                } catch (_) {
+                    loginModalShowStatus(loginModalCodeStatus, 'Network error. Try again.', true);
+                } finally {
+                    loginModalCodeSubmit.disabled = false;
+                }
+            });
+        }
+
+        if (loginModalUsername) {
+            loginModalUsername.addEventListener('input', () => {
+                const raw = (loginModalUsername.value || '').toLowerCase().replace(/[^a-z0-9_]/g, '');
+                const m = raw.match(/[a-z][a-z0-9_]*/);
+                loginModalUsername.value = m ? m[0].slice(0, 30) : '';
+            });
+        }
+
+        if (loginModalUsernameForm && loginModalUsername && loginModalUsernameSubmit) {
+            loginModalUsernameForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                loginModalShowStatus(loginModalUsernameStatus, '', false);
+                const username = (loginModalUsername.value || '').trim().toLowerCase();
+                if (username.length < 3) {
+                    loginModalShowStatus(loginModalUsernameStatus, 'Username must be at least 3 characters.', true);
+                    return;
+                }
+                loginModalUsernameSubmit.disabled = true;
+                try {
+                    const res = await fetch('/api/auth/complete-username-setup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username }),
+                        credentials: 'same-origin',
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        loginModalShowStatus(loginModalUsernameStatus, loginModalFormatApiError(data), true);
+                        return;
+                    }
+                    window.location.reload();
+                } catch (_) {
+                    loginModalShowStatus(loginModalUsernameStatus, 'Network error. Try again.', true);
+                } finally {
+                    loginModalUsernameSubmit.disabled = false;
+                }
+            });
+        }
+
+        /** Must match @media (max-width: 1179px) header chrome in static/styles.css (desktop from 1180px up). */
+        const TABBED_MOBILE_MQ = '(max-width: 1179px)';
+        const mobileNavMql = window.matchMedia(TABBED_MOBILE_MQ);
+        try { window.TABBED_MOBILE_MQ = TABBED_MOBILE_MQ; } catch (e) {}
+        const headerMobileMenuBtn = document.getElementById('header-mobile-menu-btn');
+        const mobileNavBackdropEl = document.getElementById('header-mobile-nav-backdrop');
+        const mobileCatMenuEl = document.getElementById('mobile-cat-menu');
+        const mobileCatL1El = document.getElementById('mobile-cat-l1');
+        const mobileCatL1ListEl = document.getElementById('mobile-cat-l1-list');
+        const mobileCatL1BackBtn = document.getElementById('mobile-cat-l1-back');
+        const mobileCatL2El = document.getElementById('mobile-cat-l2');
+        const mobileCatL2TitleEl = document.getElementById('mobile-cat-l2-title');
+        const mobileCatL2ListEl = document.getElementById('mobile-cat-l2-list');
+        const mobileCatBackBtn = document.getElementById('mobile-cat-back');
+        const mobileSearchBtn = document.getElementById('header-mobile-search-btn');
+
+        function isMobileHeaderLayout() {
+            return mobileNavMql && mobileNavMql.matches;
+        }
+
+        function closeMobileCatMenu() {
+            if (!mobileCatMenuEl || mobileCatMenuEl.hasAttribute('hidden')) return;
+            closeHeaderDropdownPanel(mobileCatMenuEl);
+            if (mobileNavBackdropEl && !mobileNavBackdropEl.hasAttribute('hidden')) {
+                closeHeaderDropdownPanel(mobileNavBackdropEl);
+            }
+            document.body.classList.remove('header-mobile-nav-open');
+            if (headerMobileMenuBtn) headerMobileMenuBtn.setAttribute('aria-expanded', 'false');
+            if (mobileNavBackdropEl) mobileNavBackdropEl.setAttribute('aria-hidden', 'true');
+        }
+
+        function closeTabbedMobileNavDrawer() {
+            closeMobileCatMenu();
+        }
+
+        function buildAndShowMobileCatL1() {
+            if (!mobileCatL1ListEl) return;
+            let tree = readNavCategoriesFromPageJson();
+            if (tree && tree.length) {
+                renderMobileCatL1(tree);
+                return;
+            }
+            mobileCatL1ListEl.innerHTML = '<p class="mobile-cat-menu__status">Loading…</p>';
+            syncHeaderCategoriesPanelFromApi()
+                .then(() => {
+                    tree = readNavCategoriesFromPageJson();
+                    if (tree && tree.length) {
+                        renderMobileCatL1(tree);
+                    } else {
+                        mobileCatL1ListEl.innerHTML = '<p class="mobile-cat-menu__status">No categories yet.</p>';
+                    }
+                })
+                .catch(() => {
+                    mobileCatL1ListEl.innerHTML = '<p class="mobile-cat-menu__status">Could not load categories.</p>';
+                });
+        }
+
+        function renderMobileCatL1(tree) {
+            if (!mobileCatL1ListEl) return;
+            mobileCatL1ListEl.innerHTML = '';
+            tree.forEach((cat) => {
+                if (!cat || cat.slug == null) return;
+                const subs = Array.isArray(cat.subcategories) ? cat.subcategories : [];
+                if (subs.length) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'mobile-cat-menu__main-row mobile-cat-menu__main-row--drill';
+                    btn.setAttribute('aria-label', 'Open ' + String(cat.name || '') + ' subcategories');
+                    const label = document.createElement('span');
+                    label.className = 'mobile-cat-menu__main-name';
+                    label.textContent = String(cat.name || '');
+                    btn.appendChild(label);
+                    btn.addEventListener('click', function () {
+                        showMobileCatL2(cat);
+                    });
+                    mobileCatL1ListEl.appendChild(btn);
+                } else {
+                    const a = document.createElement('a');
+                    a.className = 'mobile-cat-menu__main-row mobile-cat-menu__main-link';
+                    a.href = '/' + encodeURIComponent(String(cat.slug));
+                    a.textContent = String(cat.name || '');
+                    mobileCatL1ListEl.appendChild(a);
+                }
+            });
+        }
+
+        function showMobileCatL2(cat) {
+            if (!mobileCatL2El || !mobileCatL1El) return;
+            if (mobileCatL2TitleEl) mobileCatL2TitleEl.textContent = String(cat.name || '');
+            if (mobileCatL2ListEl) {
+                mobileCatL2ListEl.innerHTML = '';
+                const allA = document.createElement('a');
+                allA.className = 'mobile-cat-menu__sub-row';
+                allA.href = '/' + encodeURIComponent(String(cat.slug));
+                allA.textContent = 'All ' + String(cat.name || '');
+                mobileCatL2ListEl.appendChild(allA);
+                const subs = Array.isArray(cat.subcategories) ? cat.subcategories : [];
+                subs.forEach((s) => {
+                    if (!s || s.slug == null) return;
+                    const pathSeg = tabbedSubcategoryUrlPath(String(cat.slug), s);
+                    const a = document.createElement('a');
+                    a.className = 'mobile-cat-menu__sub-row';
+                    a.href = '/' + encodeURIComponent(String(cat.slug)) + '/' + encodeURIComponent(pathSeg);
+                    a.textContent = String(s.name || '');
+                    mobileCatL2ListEl.appendChild(a);
+                });
+            }
+            mobileCatL1El.setAttribute('hidden', '');
+            mobileCatL2El.removeAttribute('hidden');
+        }
+
+        function showMobileCatL1() {
+            if (!mobileCatL1El || !mobileCatL2El) return;
+            mobileCatL2El.setAttribute('hidden', '');
+            mobileCatL1El.removeAttribute('hidden');
+        }
+
+        function openMobileCatMenu() {
+            if (!mobileCatMenuEl) return;
+            if (!isMobileHeaderLayout()) return;
+            if (loginModalBackdrop && !loginModalBackdrop.hasAttribute('hidden')) closeLoginModal();
+            closeShopSidebar();
+            closeHeaderSearchPanel();
+            closeHeaderCategoriesMenu();
+            closeHeaderProfileMenu();
+            if (mobileCatL2El) mobileCatL2El.setAttribute('hidden', '');
+            if (mobileCatL1El) mobileCatL1El.removeAttribute('hidden');
+            buildAndShowMobileCatL1();
+            if (mobileNavBackdropEl) {
+                mobileNavBackdropEl.setAttribute('aria-hidden', 'false');
+                openHeaderDropdownPanel(mobileNavBackdropEl);
+            }
+            openHeaderDropdownPanel(mobileCatMenuEl);
+            document.body.classList.add('header-mobile-nav-open');
+            if (headerMobileMenuBtn) headerMobileMenuBtn.setAttribute('aria-expanded', 'true');
+            syncMobileCatMenuAccount();
+        }
+
+        if (headerMobileMenuBtn) {
+            headerMobileMenuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!isMobileHeaderLayout()) return;
+                if (mobileCatMenuEl && !mobileCatMenuEl.hasAttribute('hidden')) {
+                    closeMobileCatMenu();
+                } else {
+                    openMobileCatMenu();
+                }
+            });
+        }
+        if (mobileCatL1BackBtn) {
+            mobileCatL1BackBtn.addEventListener('click', () => closeMobileCatMenu());
+        }
+        if (mobileCatBackBtn) {
+            mobileCatBackBtn.addEventListener('click', () => showMobileCatL1());
+        }
+        if (mobileNavBackdropEl) {
+            mobileNavBackdropEl.addEventListener('click', () => closeMobileCatMenu());
+        }
+        if (mobileSearchBtn) {
+            mobileSearchBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!isMobileHeaderLayout()) return;
+                closeMobileCatMenu();
+                openHeaderSearchPanel({ focus: true });
+            });
+        }
+        if (typeof mobileNavMql.addEventListener === 'function') {
+            mobileNavMql.addEventListener('change', () => {
+                if (!mobileNavMql.matches) closeMobileCatMenu();
+            });
+        } else if (typeof mobileNavMql.addListener === 'function') {
+            mobileNavMql.addListener(() => {
+                if (!mobileNavMql.matches) closeMobileCatMenu();
+            });
+        }
+
+        const headerSearchNavBtn = document.getElementById('header-search-nav-btn');
+        const headerDesktopSearchBtn = document.getElementById('header-desktop-search-btn');
+        const headerSearchPanel = document.getElementById('header-search-panel');
+        const headerSearchInput = document.getElementById('header-search-input');
+
+        let headerSearchHoverCloseTimer = null;
+        const HEADER_SEARCH_HOVER_CLOSE_MS = 280;
+
+        function cancelHeaderSearchHoverClose() {
+            if (headerSearchHoverCloseTimer != null) {
+                clearTimeout(headerSearchHoverCloseTimer);
+                headerSearchHoverCloseTimer = null;
+            }
+        }
+
+        function scheduleHeaderSearchHoverClose() {
+            cancelHeaderSearchHoverClose();
+            headerSearchHoverCloseTimer = setTimeout(() => {
+                headerSearchHoverCloseTimer = null;
+                closeHeaderSearchPanel();
+            }, HEADER_SEARCH_HOVER_CLOSE_MS);
+        }
+
+        function closeHeaderSearchPanel() {
+            cancelHeaderSearchHoverClose();
+            if (!headerSearchPanel || headerSearchPanel.hasAttribute('hidden')) return;
+            headerSearchPanel.setAttribute('aria-hidden', 'true');
+            if (headerSearchNavBtn) headerSearchNavBtn.setAttribute('aria-expanded', 'false');
+            if (headerDesktopSearchBtn) headerDesktopSearchBtn.setAttribute('aria-expanded', 'false');
+            closeHeaderDropdownPanel(headerSearchPanel);
+        }
+
+        function updateHeaderSearchPanelGeometry() {
+            /* Height fixed in CSS (--header-overlay-row-height) for consistent strip + body push. */
+            if (headerSearchPanel) headerSearchPanel.style.removeProperty('height');
+        }
+
+        function openHeaderSearchPanel(opts) {
+            const o = opts && typeof opts === 'object' ? opts : {};
+            const shouldFocus = o.focus !== false;
+            if (!headerSearchPanel) return;
+            closeTabbedMobileNavDrawer();
+            closeHeaderCategoriesMenu();
+            closeHeaderProfileMenu();
+            updateHeaderSearchPanelGeometry();
+            headerSearchPanel.setAttribute('aria-hidden', 'false');
+            if (headerSearchNavBtn) headerSearchNavBtn.setAttribute('aria-expanded', 'true');
+            if (headerDesktopSearchBtn) headerDesktopSearchBtn.setAttribute('aria-expanded', 'true');
+            openHeaderDropdownPanel(headerSearchPanel);
+            requestAnimationFrame(() => {
+                updateHeaderSearchPanelGeometry();
+            });
+            if (headerSearchInput && shouldFocus) {
+                queueMicrotask(() => headerSearchInput.focus());
+            }
+        }
+
+        function executeHeaderSearch() {
+            if (!headerSearchInput) return;
+            const q = (headerSearchInput.value || '').trim();
+            window.location.href = '/search?q=' + encodeURIComponent(q);
+        }
+
+        const headerSearchSubmit = document.getElementById('header-search-submit');
+
+        function wireHeaderSearchOpenControls(btn) {
+            if (!btn || !headerSearchPanel) return;
+            btn.addEventListener('mouseenter', () => {
+                cancelHeaderSearchHoverClose();
+                openHeaderSearchPanel({ focus: false });
+            });
+            btn.addEventListener('mouseleave', () => {
+                scheduleHeaderSearchHoverClose();
+            });
+            btn.addEventListener('click', (e) => {
+                if (e.button !== 0) return;
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                e.preventDefault();
+                e.stopPropagation();
+                cancelHeaderSearchHoverClose();
+                if (!headerSearchPanel.classList.contains('is-open')) {
+                    openHeaderSearchPanel({ focus: true });
+                } else {
+                    closeHeaderSearchPanel();
+                }
+            });
+            btn.addEventListener('keydown', (e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                if (e.metaKey || e.ctrlKey) return;
+                e.preventDefault();
+                cancelHeaderSearchHoverClose();
+                if (!headerSearchPanel.classList.contains('is-open')) {
+                    openHeaderSearchPanel({ focus: true });
+                } else {
+                    closeHeaderSearchPanel();
+                }
+            });
+        }
+        if (headerSearchPanel) {
+            headerSearchPanel.addEventListener('mouseenter', () => {
+                cancelHeaderSearchHoverClose();
+            });
+            headerSearchPanel.addEventListener('mouseleave', () => {
+                scheduleHeaderSearchHoverClose();
+            });
+            headerSearchPanel.addEventListener('click', (e) => e.stopPropagation());
+            window.addEventListener('resize', () => {
+                if (headerSearchPanel.classList.contains('is-open')) updateHeaderSearchPanelGeometry();
+            });
+        }
+        wireHeaderSearchOpenControls(headerSearchNavBtn);
+        wireHeaderSearchOpenControls(headerDesktopSearchBtn);
+
+        if (headerSearchSubmit && headerSearchInput) {
+            headerSearchSubmit.addEventListener('click', (e) => {
+                e.preventDefault();
+                executeHeaderSearch();
+            });
+            headerSearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    executeHeaderSearch();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            if (loginModalBackdrop && !loginModalBackdrop.hidden) {
+                closeLoginModal();
+                return;
+            }
+            if (mobileCatMenuEl && !mobileCatMenuEl.hasAttribute('hidden')) {
+                closeMobileCatMenu();
+                return;
+            }
+            closeHeaderSearchPanel();
+            closeHeaderProfileMenu();
+            closeHeaderCategoriesMenu();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!headerSearchPanel || !headerSearchPanel.classList.contains('is-open')) return;
+            if (headerSearchPanel.contains(e.target)) return;
+            if (e.target === headerSearchNavBtn || (headerSearchNavBtn && headerSearchNavBtn.contains(e.target))) return;
+            if (e.target === headerDesktopSearchBtn || (headerDesktopSearchBtn && headerDesktopSearchBtn.contains(e.target))) return;
+            closeHeaderSearchPanel();
+        });
+
+        window.TabbedGetContributorCookie = getContributorCookie;
+        window.syncHeaderAvatarPlaceholderClass = syncHeaderAvatarPlaceholderClass;
+        window.TabbedOpenLoginModal = openLoginModal;
+
+        /* ---- Mobile cat menu: account footer ---- */
+        const mobileCatSigninBtn = document.getElementById('mobile-cat-signin-btn');
+        const mobileCatAcctLoggedout = document.getElementById('mobile-cat-acct-loggedout');
+        const mobileCatAcctLoggedin = document.getElementById('mobile-cat-acct-loggedin');
+        const mobileCatAcctAvatarEl = document.getElementById('mobile-cat-acct-avatar');
+        const mobileCatProfileCopyRow = document.getElementById('mobile-cat-profile-copy-row');
+        const mobileCatProfileUsername = document.getElementById('mobile-cat-profile-username');
+        const mobileCatAcctSettingsLink = document.getElementById('mobile-cat-acct-settings-link');
+        const mobileCatAcctFavoritesLink = document.getElementById('mobile-cat-acct-favorites-link');
+        const mobileCatAcctLogoutLink = document.getElementById('mobile-cat-acct-logout');
+
+        async function hydrateMobileCatJoinedMeta(u) {
+            const meta = document.getElementById('mobile-cat-profile-meta');
+            const textEl = document.getElementById('mobile-cat-profile-joined-text');
+            if (!meta || !textEl) return;
+            if (!u) {
+                meta.hidden = true;
+                textEl.textContent = '';
+                return;
+            }
+            let joined = '';
+            const script = document.getElementById('tabbed-viewer-joined-json');
+            if (script) {
+                try {
+                    const parsed = JSON.parse(script.textContent || 'null');
+                    if (typeof parsed === 'string' && parsed.trim()) joined = parsed.trim();
+                } catch (e) {
+                    /* ignore */
+                }
+            }
+            if (!joined) {
+                try {
+                    const res = await fetch('/api/me/session-hints', {
+                        credentials: 'same-origin',
+                        cache: 'no-store',
+                    });
+                    const data = res.ok ? await res.json() : {};
+                    if (data && typeof data.joined_month_year === 'string' && data.joined_month_year.trim()) {
+                        joined = data.joined_month_year.trim();
+                    }
+                } catch (e) {
+                    /* ignore */
+                }
+            }
+            if (joined) {
+                textEl.textContent = 'Joined ' + joined;
+                meta.removeAttribute('hidden');
+            } else {
+                textEl.textContent = '';
+                meta.hidden = true;
+            }
+        }
+
+        function syncMobileCatProfileAvatar(img) {
+            if (!img) return;
+            const src = (img.currentSrc || img.src || '').split('?')[0];
+            const isPlaceholder =
+                src.indexOf('/person.svg') !== -1 || src.indexOf('/logo-animated.svg') !== -1;
+            img.classList.toggle('profile-v2-avatar--placeholder', isPlaceholder);
+            const shell = img.closest('.profile-v2-avatar-shell');
+            if (shell) shell.classList.toggle('profile-v2-avatar-shell--default', isPlaceholder);
+        }
+
+        function syncMobileCatMenuAccount() {
+            const u = getContributorCookie();
+            if (u) {
+                if (mobileCatAcctLoggedout) mobileCatAcctLoggedout.hidden = true;
+                if (mobileCatAcctLoggedin) mobileCatAcctLoggedin.removeAttribute('hidden');
+                if (mobileCatAcctAvatarEl) {
+                    mobileCatAcctAvatarEl.onload = function () {
+                        syncMobileCatProfileAvatar(mobileCatAcctAvatarEl);
+                    };
+                    mobileCatAcctAvatarEl.onerror = function () {
+                        mobileCatAcctAvatarEl.onerror = null;
+                        mobileCatAcctAvatarEl.src = '/static/person.svg';
+                        syncMobileCatProfileAvatar(mobileCatAcctAvatarEl);
+                    };
+                    mobileCatAcctAvatarEl.src = tabbedAvatarUrlForUsername(u);
+                    if (mobileCatAcctAvatarEl.complete) {
+                        syncMobileCatProfileAvatar(mobileCatAcctAvatarEl);
+                    }
+                }
+                if (mobileCatProfileUsername) mobileCatProfileUsername.textContent = u;
+                if (mobileCatAcctSettingsLink) mobileCatAcctSettingsLink.href = '/user/' + encodeURIComponent(u) + '/settings';
+                if (mobileCatAcctFavoritesLink) mobileCatAcctFavoritesLink.href = '/user/' + encodeURIComponent(u);
+                void hydrateMobileCatJoinedMeta(u);
+            } else {
+                if (mobileCatAcctLoggedout) mobileCatAcctLoggedout.removeAttribute('hidden');
+                if (mobileCatAcctLoggedin) mobileCatAcctLoggedin.hidden = true;
+                if (mobileCatAcctAvatarEl) {
+                    mobileCatAcctAvatarEl.onload = null;
+                    mobileCatAcctAvatarEl.onerror = null;
+                    mobileCatAcctAvatarEl.src = '/static/person.svg';
+                    syncMobileCatProfileAvatar(mobileCatAcctAvatarEl);
+                }
+                if (mobileCatProfileUsername) mobileCatProfileUsername.textContent = '';
+                void hydrateMobileCatJoinedMeta('');
+            }
+        }
+
+        function mobileMenuCopyProfileUrl() {
+            const u = getContributorCookie();
+            if (!u) return;
+            const url = window.location.origin + '/user/' + encodeURIComponent(u);
+            function showCopied() {
+                if (typeof window.tabbedShowGlobalToast === 'function') {
+                    window.tabbedShowGlobalToast('Link copied to clipboard');
+                }
+            }
+            function fallbackCopy() {
+                try {
+                    const ta = document.createElement('textarea');
+                    ta.value = url;
+                    ta.setAttribute('readonly', '');
+                    ta.style.position = 'fixed';
+                    ta.style.left = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                } catch (err) { /* ignore */ }
+                showCopied();
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(showCopied).catch(fallbackCopy);
+            } else {
+                fallbackCopy();
+            }
+        }
+
+        if (mobileCatProfileCopyRow) {
+            mobileCatProfileCopyRow.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                mobileMenuCopyProfileUrl();
+            });
+        }
+
+        if (mobileCatSigninBtn) {
+            mobileCatSigninBtn.addEventListener('click', () => {
+                closeMobileCatMenu();
+                openLoginModal();
+            });
+        }
+        if (mobileCatAcctLogoutLink) {
+            mobileCatAcctLogoutLink.addEventListener('click', () => {
+                try { const u = getContributorCookie(); if (u) sessionStorage.setItem('tabbed_logout_toast', u); } catch (_) {}
+                document.cookie = 'tabbed_contributor_username=; path=/; max-age=0';
+            });
+        }
+        if (mobileCatMenuEl) {
+            mobileCatMenuEl.addEventListener('click', (e) => {
+                const a = e.target && e.target.closest && e.target.closest('a[href]');
+                if (!a || !mobileCatMenuEl.contains(a)) return;
+                const h = a.getAttribute('href');
+                if (!h || h === '#' || h.indexOf('javascript:') === 0) return;
+                closeMobileCatMenu();
+            });
+        }
+
+        /* ---- Shop sidebar toggle (logo click on shop pages, mobile only) ---- */
+        function openShopSidebar() {
+            const backdrop = document.getElementById('shop-sidebar-backdrop');
+            closeMobileCatMenu();
+            closeHeaderSearchPanel();
+            document.body.classList.add('shop-sidebar-open');
+            if (backdrop) {
+                backdrop.setAttribute('aria-hidden', 'false');
+                openHeaderDropdownPanel(backdrop);
+            }
+        }
+
+        function closeShopSidebar() {
+            const backdrop = document.getElementById('shop-sidebar-backdrop');
+            document.body.classList.remove('shop-sidebar-open');
+            if (backdrop && !backdrop.hasAttribute('hidden')) {
+                backdrop.setAttribute('aria-hidden', 'true');
+                closeHeaderDropdownPanel(backdrop);
+            }
+        }
+
+        const shopSidebarBackdrop = document.getElementById('shop-sidebar-backdrop');
+        if (shopSidebarBackdrop) {
+            shopSidebarBackdrop.addEventListener('click', () => closeShopSidebar());
+        }
+
+        /* Match shop sidebar: rail ≥616px (20+20+320+256); overlay ≤615px — static/styles.css */
+        const shopSidebarOverlayMq = window.matchMedia('(max-width: 615px)');
+        const headerLogoBrand = document.querySelector('.header-left-brand > a');
+        if (headerLogoBrand) {
+            headerLogoBrand.addEventListener('click', (e) => {
+                if (!document.body.classList.contains('page-shop')) return;
+                if (!shopSidebarOverlayMq.matches) return;
+                e.preventDefault();
+                if (document.body.classList.contains('shop-sidebar-open')) {
+                    closeShopSidebar();
+                } else {
+                    openShopSidebar();
+                }
+            });
+        }
+
+        window.TabbedCloseShopSidebar = closeShopSidebar;
+
+        tryOpenSigninFromQuery();
+    })();
+    </script>
+    <script>
+    (function () {
+            /* Shop pages: full-width underlays below TABBED_MOBILE_MQ; at ≥1180px dropdowns use 256px + remainder (match static/styles.css). */
+        function syncTabbedHeaderOverlays() {
+            var root = document.documentElement;
+            var body = document.body;
+            var mobileMq = window.TABBED_MOBILE_MQ || '(max-width: 1179px)';
+            if (!body.classList.contains('page-shop')) {
+                root.style.removeProperty('--header-overlay-left');
+                root.style.removeProperty('--header-overlay-width');
+                root.style.removeProperty('--header-overlay-right-inset');
+                root.style.removeProperty('--header-profile-overlay-left');
+                root.style.removeProperty('--header-profile-overlay-width');
+                root.classList.remove('tabbed-shop-strip-inner-tight');
+                return;
+            }
+            if (window.matchMedia(mobileMq).matches) {
+                root.style.setProperty('--header-overlay-left', '0');
+                root.style.setProperty('--header-overlay-width', '100%');
+                root.style.setProperty('--header-overlay-right-inset', '0');
+                root.style.setProperty('--header-profile-overlay-left', '0');
+                root.style.setProperty('--header-profile-overlay-width', '100%');
+                return;
+            }
+            /* Desktop ≥1066px: do not set --header-overlay-* here — inline values override static/styles.css :root.
+               Match breakpoints there (@media min-width: 1066px). Profile menu position/size stays in CSS. */
+            root.style.removeProperty('--header-overlay-left');
+            root.style.removeProperty('--header-overlay-width');
+            root.style.removeProperty('--header-overlay-right-inset');
+            root.style.removeProperty('--header-profile-overlay-left');
+            root.style.removeProperty('--header-profile-overlay-width');
+        }
+
+        /** Legacy no-op: strip width was tied to a 900px “tight” class (removed). */
+        function tabbedSyncShopStripInnerTight(root) {
+            try {
+                root.classList.remove('tabbed-shop-strip-inner-tight');
+            } catch (_) {}
+        }
+
+        function tabbedOverlayAndStripLayout() {
+            syncTabbedHeaderOverlays();
+            tabbedSyncShopStripInnerTight(document.documentElement);
+        }
+
+        var overlayResizeTimer;
+        function onResize() {
+            window.clearTimeout(overlayResizeTimer);
+            overlayResizeTimer = window.setTimeout(tabbedOverlayAndStripLayout, 60);
+        }
+
+        function runAfterLayout() {
+            tabbedOverlayAndStripLayout();
+            requestAnimationFrame(function () {
+                requestAnimationFrame(tabbedOverlayAndStripLayout);
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', runAfterLayout);
+        } else {
+            runAfterLayout();
+        }
+        window.addEventListener('load', tabbedOverlayAndStripLayout);
+        window.addEventListener('resize', onResize);
+        window.addEventListener('orientationchange', tabbedOverlayAndStripLayout);
+    })();
+    </script>
+    <div id="tabbed-global-toast" class="tabbed-global-toast" role="status" aria-live="polite" hidden>
+        <span class="tabbed-toast__message"></span>
+        <button type="button" class="tabbed-toast__close" aria-label="Dismiss">×</button>
+    </div>
+    <script>
+    (function () {
+        function tabbedHideGlobalToast() {
+            var el = document.getElementById('tabbed-global-toast');
+            if (!el) return;
+            var msg = el.querySelector('.tabbed-toast__message');
+            el.classList.remove('tabbed-global-toast--error');
+            el.hidden = true;
+            if (msg) msg.textContent = '';
+            window.clearTimeout(window.__tabbedGlobalToastTimer);
+        }
+        window.tabbedHideGlobalToast = tabbedHideGlobalToast;
+
+        /** Same chrome as settings / logout toasts; optional { isError: true } for failures. */
+        window.tabbedShowGlobalToast = function (message, opts) {
+            opts = opts || {};
+            var isError = !!opts.isError;
+            var el = document.getElementById('tabbed-global-toast');
+            if (!el) return;
+            var msg = el.querySelector('.tabbed-toast__message');
+            if (msg) msg.textContent = message || '';
+            el.classList.toggle('tabbed-global-toast--error', isError);
+            el.hidden = false;
+            window.clearTimeout(window.__tabbedGlobalToastTimer);
+            window.__tabbedGlobalToastTimer = window.setTimeout(function () {
+                tabbedHideGlobalToast();
+            }, 3500);
+        };
+
+        var globalToastEl = document.getElementById('tabbed-global-toast');
+        if (globalToastEl) {
+            var closeBtn = globalToastEl.querySelector('.tabbed-toast__close');
+            if (closeBtn) closeBtn.addEventListener('click', tabbedHideGlobalToast);
+        }
+
+        function showLogoutToastFromStorage() {
+            try {
+                var u = sessionStorage.getItem('tabbed_logout_toast');
+                if (!u) return;
+                sessionStorage.removeItem('tabbed_logout_toast');
+                var el = document.getElementById('tabbed-global-toast');
+                if (!el) return;
+                var msg = el.querySelector('.tabbed-toast__message');
+                if (msg) msg.textContent = u + ' logged out.';
+                el.hidden = false;
+                window.clearTimeout(window.__tabbedGlobalToastTimer);
+                window.__tabbedGlobalToastTimer = window.setTimeout(tabbedHideGlobalToast, 4000);
+            } catch (e) {}
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', showLogoutToastFromStorage);
+        } else {
+            showLogoutToastFromStorage();
+        }
+    })();
+    </script>
+    <script>
+    (function () {
+        var KEY = 'tabbed_affiliate_strip_dismissed_for';
+        function suppressAffiliateStrip() {
+            try {
+                sessionStorage.setItem(KEY, window.location.pathname + window.location.search);
+            } catch (e) { /* ignore */ }
+            document.documentElement.classList.add('affiliate-strip-suppressed');
+            var strip = document.getElementById('site-affiliate-disclosure-strip');
+            if (strip) {
+                strip.hidden = true;
+                strip.setAttribute('aria-hidden', 'true');
+            }
+        }
+        var btn = document.getElementById('site-affiliate-disclosure-strip-close');
+        if (btn) {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                suppressAffiliateStrip();
+            });
+        }
+    })();
+    </script>
+    {% block body_scripts %}{% endblock %}
+</body>
+</html>

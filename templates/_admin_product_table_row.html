@@ -1,0 +1,242 @@
+<tr data-admin-product-row class="admin-product-sheet-tr">
+<td class="admin-product-sheet-td admin-product-sheet-td--narrow"><div class="admin-product-sheet-cell-scroll">
+<label class="admin-product-sheet-bulk-label"><input type="checkbox" class="admin-sheet-row-bulk" aria-label="Select row"></label>
+<form id="__RP__sheetProductForm" class="admin-product-form admin-product-sheet-form-anchor"></form>
+</div></td>
+<td class="admin-product-sheet-td admin-product-sheet-td--narrow"><div class="admin-product-sheet-cell-scroll">
+<span class="admin-product-sheet-id-readonly text-muted-xs">—</span>
+</div></td>
+<td class="admin-product-sheet-td"><div class="admin-product-sheet-cell-scroll">
+<textarea form="__RP__sheetProductForm" id="__RP__productName" name="product_name" maxlength="120" required class="admin-sheet-input admin-product-sheet-name-textarea" autocomplete="off" rows="3"></textarea>
+</div></td>
+<td class="admin-product-sheet-td"><div class="admin-product-sheet-cell-scroll">
+<div class="contribute-attr-column contribute-attr-column--stack admin-product-sheet-picker">
+<div class="sidebar-section contribute-attr-panel" data-contribute-panel>
+<div class="contribute-attr-header-sidebar">
+<div class="contribute-attr-header-row">
+<span class="contribute-attr-header-title">Brand</span>
+<div class="contribute-attr-header-tools">
+<button type="button" class="contribute-header-tool" data-tool="search" aria-label="Search"><img src="/static/search.svg" alt="" width="16" height="16"></button>
+</div>
+</div>
+<div class="contribute-attr-header-panel-expand">
+<div class="contribute-expand-search contribute-container" hidden>
+<input type="search" class="sidebar-filter-search contribute-header-search-input" id="__RP__search-contribute-brand" placeholder="Filter…" autocomplete="off">
+</div>
+</div>
+</div>
+<div class="sidebar-selected-items" id="__RP__contribute-selected-brand"></div>
+<div class="sidebar-filter-list contribute-attr-picker-list" id="__RP__contribute-brand-picker"></div>
+</div>
+</div>
+</div></td>
+<td class="admin-product-sheet-td admin-product-sheet-td--cat"><div class="admin-product-sheet-cell-scroll">
+<div class="visually-hidden">
+<input type="hidden" form="__RP__sheetProductForm" id="__RP__mainCategory" name="main_category" value="">
+<input type="hidden" form="__RP__sheetProductForm" id="__RP__subcategory" name="subcategory" value="">
+<input type="hidden" form="__RP__sheetProductForm" id="__RP__brandName" name="brand_name" value="">
+<input type="hidden" form="__RP__sheetProductForm" id="__RP__madeIn" name="made_in" value="">
+</div>
+<div class="contribute-attr-column contribute-attr-column--stack admin-product-sheet-picker">
+<div class="sidebar-section contribute-attr-panel" data-contribute-panel>
+<div class="contribute-attr-header-sidebar">
+<div class="contribute-attr-header-row">
+<span class="contribute-attr-header-title">Category</span>
+<div class="contribute-attr-header-tools">
+<button type="button" class="contribute-header-tool" data-tool="search" aria-label="Search"><img src="/static/search.svg" alt="" width="16" height="16"></button>
+</div>
+</div>
+<div class="contribute-attr-header-panel-expand">
+<div class="contribute-expand-search contribute-container" hidden>
+<input type="search" class="sidebar-filter-search contribute-header-search-input" id="__RP__search-contribute-category" placeholder="Filter…" autocomplete="off">
+</div>
+</div>
+</div>
+<div class="sidebar-selected-items" id="__RP__contribute-selected-category"></div>
+<div class="sidebar-filter-list contribute-attr-picker-list" id="__RP__contribute-category-picker"></div>
+</div>
+</div>
+</div></td>
+<td class="admin-product-sheet-td admin-product-sheet-td--cat"><div class="admin-product-sheet-cell-scroll">
+<div class="contribute-attr-column contribute-attr-column--stack admin-product-sheet-picker">
+<div class="sidebar-section contribute-attr-panel" data-contribute-panel>
+<div class="contribute-attr-header-sidebar">
+<div class="contribute-attr-header-row">
+<span class="contribute-attr-header-title">Subcategory</span>
+<div class="contribute-attr-header-tools">
+<button type="button" class="contribute-header-tool" data-tool="search" aria-label="Search"><img src="/static/search.svg" alt="" width="16" height="16"></button>
+</div>
+</div>
+<div class="contribute-attr-header-panel-expand">
+<div class="contribute-expand-search contribute-container" hidden>
+<input type="search" class="sidebar-filter-search contribute-header-search-input" id="__RP__search-contribute-subcategory" placeholder="Filter…" autocomplete="off">
+</div>
+</div>
+</div>
+<div class="sidebar-selected-items" id="__RP__contribute-selected-subcategory"></div>
+<div class="sidebar-filter-list contribute-attr-picker-list" id="__RP__contribute-subcategory-picker"></div>
+</div>
+</div>
+</div></td>
+<td class="admin-product-sheet-td"><div class="admin-product-sheet-cell-scroll">
+<div class="contribute-attr-column contribute-attr-column--stack admin-product-sheet-picker">
+<div class="sidebar-section contribute-attr-panel" data-contribute-panel>
+<div class="contribute-attr-header-sidebar">
+<div class="contribute-attr-header-row">
+<span class="contribute-attr-header-title">Made In</span>
+<div class="contribute-attr-header-tools">
+<button type="button" class="contribute-header-tool" data-tool="search" aria-label="Search"><img src="/static/search.svg" alt="" width="16" height="16"></button>
+</div>
+</div>
+<div class="contribute-attr-header-panel-expand">
+<div class="contribute-expand-search contribute-container" hidden>
+<input type="search" class="sidebar-filter-search contribute-header-search-input" id="__RP__search-contribute-made-in" placeholder="Filter…" autocomplete="off">
+</div>
+</div>
+</div>
+<div class="sidebar-selected-items" id="__RP__contribute-selected-made-in"></div>
+<div class="sidebar-filter-list contribute-attr-picker-list" id="__RP__contribute-made-in-picker"></div>
+</div>
+</div>
+</div></td>
+<td class="admin-product-sheet-td admin-product-sheet-td--narrow"><div class="admin-product-sheet-cell-scroll">
+<input type="number" form="__RP__sheetProductForm" id="__RP__price" name="price" step="0.01" min="0" class="admin-sheet-input" placeholder="—" autocomplete="off">
+</div></td>
+<td class="admin-product-sheet-td"><div class="admin-product-sheet-cell-scroll">
+<div class="admin-product-link-row">
+<input type="url" form="__RP__sheetProductForm" class="admin-product-link-input admin-sheet-input" id="__RP__productLink" name="product_link" placeholder="https://…" autocomplete="off">
+<button type="button" class="header-login-btn admin-product-link-ai-btn" id="__RP__productLinkAiBtn">AI</button>
+</div>
+</div></td>
+<td class="admin-product-sheet-td admin-product-sheet-td--narrow"><div class="admin-product-sheet-cell-scroll">
+<label class="label-row admin-product-sheet-tight-label"><input type="checkbox" form="__RP__sheetProductForm" id="__RP__earnsCommission" name="earns_commission" value="1"> Commission</label>
+</div></td>
+<td class="admin-product-sheet-td"><div class="admin-product-sheet-cell-scroll">
+<div class="form-group admin-product-sheet-file-group">
+<div class="file-upload file-upload--compact">
+<input type="file" form="__RP__sheetProductForm" id="__RP__productImage" name="product_image" accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,.jpg,.jpeg,.png,.webp,.gif,.svg">
+<label for="__RP__productImage">Image…</label>
+<div class="file-name text-muted-xs" id="__RP__productImageName"></div>
+</div>
+<div id="__RP__productNewImagePreviewWrap" class="admin-product-sheet-thumb-wrap" hidden>
+<img id="__RP__productNewImagePreview" class="admin-product-sheet-thumb" alt="">
+</div>
+</div>
+</div></td>
+<td class="admin-product-sheet-td"><div class="admin-product-sheet-cell-scroll">
+<span class="admin-product-sheet-filename-readonly text-muted-xs" id="__RP__filenameReadonly">—</span>
+</div></td>
+<td class="admin-product-sheet-td"><div class="admin-product-sheet-cell-scroll">
+<div class="contribute-attr-column contribute-attr-column--stack admin-product-sheet-picker">
+<div class="sidebar-section contribute-attr-panel" data-contribute-panel>
+<div class="contribute-attr-header-sidebar">
+<div class="contribute-attr-header-row">
+<span class="contribute-attr-header-title">Made With</span>
+<div class="contribute-attr-header-tools">
+<button type="button" class="contribute-header-tool" data-tool="search" aria-label="Search"><img src="/static/search.svg" alt="" width="16" height="16"></button>
+<button type="button" class="contribute-header-tool" data-tool="add" aria-label="Add"><img src="/static/plus.svg" alt="" width="16" height="16"></button>
+</div>
+</div>
+<div class="contribute-attr-header-panel-expand">
+<div class="contribute-expand-search contribute-container" hidden>
+<input type="search" class="sidebar-filter-search contribute-header-search-input" id="__RP__search-contribute-made-with" placeholder="Filter…" autocomplete="off">
+</div>
+<div class="contribute-expand-add contribute-container" hidden>
+<div class="contribute-expand-add-row">
+<input type="text" class="contribute-attr-new-input" id="__RP__contributeNewMadeWith" placeholder="Add…" autocomplete="off">
+</div>
+</div>
+</div>
+</div>
+<div class="sidebar-selected-items" id="__RP__contribute-selected-made-with"></div>
+<div class="sidebar-filter-list contribute-attr-picker-list" id="__RP__contribute-made-with-picker"></div>
+</div>
+</div>
+</div></td>
+<td class="admin-product-sheet-td"><div class="admin-product-sheet-cell-scroll">
+<div class="contribute-attr-column contribute-attr-column--stack admin-product-sheet-picker">
+<div class="sidebar-section contribute-attr-panel" data-contribute-panel>
+<div class="contribute-attr-header-sidebar">
+<div class="contribute-attr-header-row">
+<span class="contribute-attr-header-title">Made Without</span>
+<div class="contribute-attr-header-tools">
+<button type="button" class="contribute-header-tool" data-tool="search" aria-label="Search"><img src="/static/search.svg" alt="" width="16" height="16"></button>
+<button type="button" class="contribute-header-tool" data-tool="add" aria-label="Add"><img src="/static/plus.svg" alt="" width="16" height="16"></button>
+</div>
+</div>
+<div class="contribute-attr-header-panel-expand">
+<div class="contribute-expand-search contribute-container" hidden>
+<input type="search" class="sidebar-filter-search contribute-header-search-input" id="__RP__search-contribute-made-without" placeholder="Filter…" autocomplete="off">
+</div>
+<div class="contribute-expand-add contribute-container" hidden>
+<div class="contribute-expand-add-row">
+<input type="text" class="contribute-attr-new-input" id="__RP__contributeNewMadeWithout" placeholder="Add…" autocomplete="off">
+</div>
+</div>
+</div>
+</div>
+<div class="sidebar-selected-items" id="__RP__contribute-selected-made-without"></div>
+<div class="sidebar-filter-list contribute-attr-picker-list" id="__RP__contribute-made-without-picker"></div>
+</div>
+</div>
+</div></td>
+<td class="admin-product-sheet-td"><div class="admin-product-sheet-cell-scroll">
+<div class="contribute-attr-column contribute-attr-column--stack admin-product-sheet-picker">
+<div class="sidebar-section contribute-attr-panel" data-contribute-panel>
+<div class="contribute-attr-header-sidebar">
+<div class="contribute-attr-header-row">
+<span class="contribute-attr-header-title">Features</span>
+<div class="contribute-attr-header-tools">
+<button type="button" class="contribute-header-tool" data-tool="search" aria-label="Search"><img src="/static/search.svg" alt="" width="16" height="16"></button>
+<button type="button" class="contribute-header-tool" data-tool="add" aria-label="Add"><img src="/static/plus.svg" alt="" width="16" height="16"></button>
+</div>
+</div>
+<div class="contribute-attr-header-panel-expand">
+<div class="contribute-expand-search contribute-container" hidden>
+<input type="search" class="sidebar-filter-search contribute-header-search-input" id="__RP__search-contribute-attributes" placeholder="Filter…" autocomplete="off">
+</div>
+<div class="contribute-expand-add contribute-container" hidden>
+<div class="contribute-expand-add-row">
+<input type="text" class="contribute-attr-new-input" id="__RP__contributeNewAttributes" placeholder="Add…" autocomplete="off">
+</div>
+</div>
+</div>
+</div>
+<div class="sidebar-selected-items" id="__RP__contribute-selected-attributes"></div>
+<div class="sidebar-filter-list contribute-attr-picker-list" id="__RP__contribute-attributes-picker"></div>
+</div>
+</div>
+</div></td>
+<td class="admin-product-sheet-td"><div class="admin-product-sheet-cell-scroll">
+<div class="contribute-attr-column contribute-attr-column--stack admin-product-sheet-picker">
+<div class="sidebar-section contribute-attr-panel" data-contribute-panel>
+<div class="contribute-attr-header-sidebar">
+<div class="contribute-attr-header-row">
+<span class="contribute-attr-header-title">Certifications</span>
+<div class="contribute-attr-header-tools">
+<button type="button" class="contribute-header-tool" data-tool="search" aria-label="Search"><img src="/static/search.svg" alt="" width="16" height="16"></button>
+</div>
+</div>
+<div class="contribute-attr-header-panel-expand">
+<div class="contribute-expand-search contribute-container" hidden>
+<input type="search" class="sidebar-filter-search contribute-header-search-input" id="__RP__search-contribute-certifications" placeholder="Filter…" autocomplete="off">
+</div>
+</div>
+</div>
+<div class="sidebar-selected-items admin-cert-selected-host" id="__RP__contribute-selected-certifications"></div>
+<div class="sidebar-filter-list contribute-attr-picker-list" id="__RP__contribute-certifications-picker"></div>
+</div>
+</div>
+</div></td>
+<td class="admin-product-sheet-td"><div class="admin-product-sheet-cell-scroll">
+<textarea form="__RP__sheetProductForm" id="__RP__productDescription" name="description" rows="3" class="admin-sheet-textarea admin-product-sheet-textarea"></textarea>
+</div></td>
+<td class="admin-product-sheet-td admin-product-sheet-td--narrow"><div class="admin-product-sheet-cell-scroll">
+<label class="label-row admin-product-sheet-tight-label"><input type="checkbox" form="__RP__sheetProductForm" id="__RP__isVerified" name="is_verified" value="1"> Verified</label>
+</div></td>
+<td class="admin-product-sheet-td admin-product-sheet-td--actions"><div class="admin-product-sheet-cell-scroll admin-product-sheet-actions-cell">
+<div id="__RP__sheet-alerts"></div>
+<button type="button" class="header-login-btn admin-sheet-card-save">Save</button>
+<button type="button" class="admin-ref-row-delete admin-sheet-card-delete">Delete</button>
+</div></td>
+</tr>

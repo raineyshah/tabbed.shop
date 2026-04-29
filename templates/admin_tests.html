@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Admin tests — Tabbed{% endblock %}
+{% block head_extra %}
+    <style>
+        .admin-tests-panel { max-width: 56rem; }
+        .admin-tests-summary { font-size: 0.9rem; margin: 0 0 0.75rem; opacity: 0.92; }
+        .admin-tests-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        .admin-tests-table th, .admin-tests-table td { text-align: left; padding: 0.5rem 0.65rem; vertical-align: top; border-bottom: 1px solid var(--line-admin-table, rgba(255, 255, 255, 0.12)); }
+        .admin-tests-table th { font-weight: 600; }
+        .admin-tests-table .admin-tests-col-status { width: 5.5rem; white-space: nowrap; }
+        .admin-tests-table td.admin-tests-col-name { width: auto; }
+        .admin-tests-status-pass { color: #8fd9a8; }
+        .admin-tests-status-fail { color: #f09090; }
+        tr.admin-tests-detail td { font-size: 0.82rem; color: #b8b8c0; border-bottom: 1px solid var(--line-admin-table, rgba(255, 255, 255, 0.08)); padding-top: 0.2rem; padding-bottom: 0.55rem; }
+        .admin-tests-placeholder, .admin-tests-error { margin: 0; opacity: 0.9; }
+    </style>
+{% endblock %}
+{% block body_attrs %} class="page-scroll {% if admin_authenticated %}page-admin{% else %}page-admin-login{% endif %}"{% endblock %}
+{% block content %}
+    <div class="admin-container">
+        <div class="admin-top-actions" role="toolbar" aria-label="Admin tests">
+            <a href="/admin/products" class="header-login-btn admin-sheet-link">Back to admin</a>
+            {% if admin_authenticated %}
+            <button type="button" class="header-login-btn" id="adminRunSelfTests">Run Test Cases</button>
+            <button type="button" class="admin-logout-btn" id="adminTestsLogoutBtn">Log out</button>
+            {% endif %}
+        </div>
+
+        {% if not admin_authenticated %}
+        <p class="admin-tests-signin-hint" style="margin: 1.5rem 0;">Sign in on the <a href="/admin/products">admin page</a> to run the test suite.</p>
+        {% else %}
+        <div class="admin-tests-panel" style="margin: 1rem 0;">
+            <p class="admin-tests-lede" style="margin-bottom: 0.75rem; opacity: 0.9;">
+                Runs integration checks in memory (separate from your live catalog): sign-in and email verification codes, admin session boundaries, and profile privacy (hidden favorites) as implemented in the app.
+            </p>
+            <p id="adminTestsSummary" class="admin-tests-summary" hidden></p>
+            <div id="adminTestsOutput" class="admin-tests-table-wrap" role="region" aria-live="polite" aria-relevant="additions text">
+                <p class="admin-tests-placeholder">Click “Run Test Cases” to start.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if admin_authenticated %}
+    <script>
+    (function () {
+        var btn = document.getElementById('adminRunSelfTests');
+        var out = document.getElementById('adminTestsOutput');
+        var summary = document.getElementById('adminTestsSummary');
+        var logOut = document.getElementById('adminTestsLogoutBtn');
+        if (logOut) {
+            logOut.addEventListener('click', function () {
+                fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' }).then(function () {
+                    window.location.href = '/admin/products';
+                });
+            });
+        }
+        if (!btn || !out) return;
+        function showRunning() {
+            if (summary) { summary.textContent = ''; summary.hidden = true; }
+            out.innerHTML = '';
+            var t = document.createElement('table');
+            t.className = 'admin-tests-table';
+            t.setAttribute('role', 'table');
+            var thead = document.createElement('thead');
+            var thr = document.createElement('tr');
+            ['Status', 'Test'].forEach(function (label) {
+                var th = document.createElement('th');
+                th.scope = 'col';
+                th.textContent = label;
+                if (label === 'Status') th.className = 'admin-tests-col-status';
+                thr.appendChild(th);
+            });
+            thead.appendChild(thr);
+            t.appendChild(thead);
+            var tbody = document.createElement('tbody');
+            var tr = document.createElement('tr');
+            var td1 = document.createElement('td');
+            td1.className = 'admin-tests-col-status';
+            td1.textContent = '…';
+            var td2 = document.createElement('td');
+            td2.className = 'admin-tests-col-name';
+            td2.textContent = 'Running…';
+            tr.appendChild(td1);
+            tr.appendChild(td2);
+            tbody.appendChild(tr);
+            t.appendChild(tbody);
+            out.appendChild(t);
+        }
+        function showError(msg) {
+            if (summary) { summary.textContent = ''; summary.hidden = true; }
+            out.innerHTML = '';
+            var p = document.createElement('p');
+            p.className = 'admin-tests-error';
+            p.textContent = msg;
+            out.appendChild(p);
+        }
+        function showResults(data) {
+            if (summary) {
+                var ms = data.ms != null ? data.ms : '?';
+                var p = data.passed != null ? data.passed : '?';
+                var f = data.failed != null ? data.failed : '?';
+                summary.textContent = 'Duration: ' + ms + ' ms · Passed: ' + p + ' · Failed: ' + f;
+                summary.hidden = false;
+            }
+            out.innerHTML = '';
+            var t = document.createElement('table');
+            t.className = 'admin-tests-table';
+            t.setAttribute('role', 'table');
+            var thead = document.createElement('thead');
+            var thr = document.createElement('tr');
+            ['Status', 'Test'].forEach(function (label) {
+                var th = document.createElement('th');
+                th.scope = 'col';
+                th.textContent = label;
+                if (label === 'Status') th.className = 'admin-tests-col-status';
+                thr.appendChild(th);
+            });
+            thead.appendChild(thr);
+            t.appendChild(thead);
+            var tbody = document.createElement('tbody');
+            (data.results || []).forEach(function (row) {
+                var tr = document.createElement('tr');
+                var ok = !!row.ok;
+                var td1 = document.createElement('td');
+                td1.className = 'admin-tests-col-status ' + (ok ? 'admin-tests-status-pass' : 'admin-tests-status-fail');
+                td1.textContent = ok ? 'Pass' : 'Fail';
+                var td2 = document.createElement('td');
+                td2.className = 'admin-tests-col-name';
+                td2.textContent = row.name != null ? row.name : '';
+                tr.appendChild(td1);
+                tr.appendChild(td2);
+                tbody.appendChild(tr);
+                if (!ok && row.detail) {
+                    var trd = document.createElement('tr');
+                    trd.className = 'admin-tests-detail';
+                    var tdd = document.createElement('td');
+                    tdd.setAttribute('colspan', '2');
+                    tdd.textContent = row.detail;
+                    trd.appendChild(tdd);
+                    tbody.appendChild(trd);
+                }
+            });
+            t.appendChild(tbody);
+            out.appendChild(t);
+        }
+        btn.addEventListener('click', function () {
+            btn.disabled = true;
+            showRunning();
+            fetch('/api/admin/run-tests', { method: 'POST', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                .then(function (r) {
+                    if (r.status === 401) {
+                        showError('Not authorized. Sign in again on /admin/products.');
+                        return null;
+                    }
+                    return r.json();
+                })
+                .then(function (data) {
+                    if (!data) return;
+                    showResults(data);
+                })
+                .catch(function (e) {
+                    showError('Request failed: ' + (e && e.message ? e.message : e));
+                })
+                .finally(function () { btn.disabled = false; });
+        });
+    })();
+    </script>
+    {% endif %}
+{% endblock %}

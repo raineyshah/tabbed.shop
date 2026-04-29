@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Contact — tabbed.shop{% endblock %}
+{% block body_attrs %} class="page-scroll"{% endblock %}
+{% block content %}
+    <div class="page-wrap page-wrap--about">
+        <div class="landing">
+            <h1 class="page-title">Contact</h1>
+            <form class="page-contact-form" id="page-contact-hub-form" method="post" action="/api/contact" novalidate>
+                <input type="hidden" name="category" id="page-contact-category" value="{{ contact_topic }}">
+                <div class="form-group">
+                    <label for="page-contact-topic-select">Topic</label>
+                    <select id="page-contact-topic-select" name="topic_ui" autocomplete="off">
+                        {% for t in contact_topics %}
+                        <option value="{{ t.key }}" data-email="{{ t.email }}"{% if t.key == contact_topic %} selected{% endif %}>{{ t.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="page-contact-title">Title</label>
+                    <input type="text" id="page-contact-title" name="title" maxlength="200" required placeholder="Brief subject" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="page-contact-message">Message</label>
+                    <textarea id="page-contact-message" name="message" rows="5" placeholder="What would you like us to know?" required></textarea>
+                </div>
+                <p class="page-contact-form__status" id="page-contact-status" role="status" hidden></p>
+                <div class="page-contact-form__actions">
+                    <button type="submit" class="page-contact-form__submit btn-submit" id="page-contact-submit">Submit</button>
+                    <p class="page-contact-form__alt" aria-live="polite">
+                        <span class="page-contact-form__alt-paren">(Alternatively, you can email us at </span><span class="page-contact-form__alt-q">&ldquo;</span><a id="page-contact-alt-link" class="page-contact-form__alt-email" href="mailto:{{ contact_alt_email }}">{{ contact_alt_email }}</a><span class="page-contact-form__alt-q">&rdquo;</span><span class="page-contact-form__alt-paren">).</span>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+    (function () {
+        var form = document.getElementById('page-contact-hub-form');
+        var statusEl = document.getElementById('page-contact-status');
+        var submitBtn = document.getElementById('page-contact-submit');
+        var select = document.getElementById('page-contact-topic-select');
+        var hiddenCat = document.getElementById('page-contact-category');
+        var mailLink = document.getElementById('page-contact-alt-link');
+
+        function applyTopicFromSelect() {
+            if (!select || !hiddenCat || !mailLink) return;
+            var opt = select.options[select.selectedIndex];
+            if (!opt) return;
+            var key = opt.value;
+            var em = opt.getAttribute('data-email') || '';
+            hiddenCat.value = key;
+            mailLink.href = em ? 'mailto:' + em : 'mailto:';
+            mailLink.textContent = em;
+        }
+
+        if (select) {
+            select.addEventListener('change', applyTopicFromSelect);
+            applyTopicFromSelect();
+        }
+
+        function setStatus(text, isError) {
+            if (!text) {
+                statusEl.hidden = true;
+                statusEl.textContent = '';
+                statusEl.classList.remove('page-contact-form__status--error', 'page-contact-form__status--ok');
+                return;
+            }
+            statusEl.hidden = false;
+            statusEl.textContent = text;
+            statusEl.classList.toggle('page-contact-form__status--error', !!isError);
+            statusEl.classList.toggle('page-contact-form__status--ok', !isError);
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            setStatus('');
+            submitBtn.disabled = true;
+            applyTopicFromSelect();
+            var fd = new FormData(form);
+            fd.delete('topic_ui');
+            fetch('/api/contact', { method: 'POST', body: fd })
+                .then(function (res) {
+                    return res.json().catch(function () { return {}; }).then(function (data) {
+                        return { ok: res.ok, data: data };
+                    });
+                })
+                .then(function (r) {
+                    if (r.ok && r.data && r.data.ok) {
+                        setStatus('Thanks — your message was sent.', false);
+                        var keepTopic = select ? select.value : (hiddenCat ? hiddenCat.value : '');
+                        form.reset();
+                        if (select && keepTopic) {
+                            for (var i = 0; i < select.options.length; i++) {
+                                if (select.options[i].value === keepTopic) {
+                                    select.selectedIndex = i;
+                                    break;
+                                }
+                            }
+                        }
+                        applyTopicFromSelect();
+                    } else {
+                        var msg = 'Something went wrong. Please try again.';
+                        var d = r.data && r.data.detail;
+                        if (typeof d === 'string') msg = d;
+                        else if (Array.isArray(d) && d.length) {
+                            msg = d.map(function (x) { return (x && x.msg) ? x.msg : ''; }).filter(Boolean).join(' ') || msg;
+                        }
+                        setStatus(msg, true);
+                    }
+                })
+                .catch(function () {
+                    setStatus('Could not send your message. Check your connection and try again.', true);
+                })
+                .then(function () {
+                    submitBtn.disabled = false;
+                });
+        });
+    })();
+    </script>
+{% endblock %}

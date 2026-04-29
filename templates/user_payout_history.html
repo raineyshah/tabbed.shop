@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_username }} — Payout history{% endblock %}
+{% block body_attrs %} class="page-scroll"{% endblock %}
+{% block content %}
+    <div class="profile-container">
+{% include "_profile_hero.html" %}
+{% include "_profile_payout_section.html" %}
+    </div>
+
+    <script>
+        const PROFILE_USERNAME = {{ profile_username | tojson }};
+
+        async function loadPayoutHistory() {
+            const container = document.getElementById('profile-payout-section');
+            try {
+                const res = await fetch(`/api/payouts?username=${encodeURIComponent(PROFILE_USERNAME)}`);
+                if (!res.ok) throw new Error();
+                const { payouts } = await res.json();
+                if (!payouts.length) {
+                    container.innerHTML = '<div class="empty-state">No payout history yet.</div>';
+                    return;
+                }
+                container.innerHTML = '';
+                payouts.forEach(n => {
+                    const item = document.createElement('div');
+                    item.className = 'notification-item';
+                    const d = new Date(n.timestamp);
+                    const timeStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) +
+                                    ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    item.innerHTML = `
+                        <div>
+                            <div class="notification-type">Payout</div>
+                            <div class="notification-time">${timeStr}</div>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            } catch {
+                container.innerHTML = '<div class="empty-state">Could not load payout history.</div>';
+            }
+        }
+
+        loadPayoutHistory();
+    </script>
+{% endblock %}

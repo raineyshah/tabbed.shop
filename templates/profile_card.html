@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_username }}{% endblock %}
+{% block content %}
+<div class="profile-container profile-container--card">
+    <div class="landing profile-card-inner">
+        {% include "_profile_hero.html" %}
+    </div>
+</div>
+{% endblock %}

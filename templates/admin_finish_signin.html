@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Finish admin sign-in — Tabbed{% endblock %}
+{% block body_attrs %} class="page-scroll page-admin-login"{% endblock %}
+{% block content %}
+    <div class="admin-container">
+        <h1 class="admin-title">Finish sign-in</h1>
+        <div id="admin-finish-alerts"></div>
+        <div class="admin-signin-gate" style="margin-top:8px;">
+            <p class="login-modal-lead" style="margin-bottom:14px;">Enter the admin site password from your server configuration, then continue.</p>
+            <form class="login-modal-form" id="admin-finish-form" novalidate autocomplete="on">
+                <div class="form-group">
+                    <label for="adminFinishPassword">Site password</label>
+                    <input type="password" id="adminFinishPassword" name="password" required autocomplete="current-password" autocapitalize="none" spellcheck="false">
+                </div>
+                <div class="login-modal-actions">
+                    <button type="submit" class="login-modal-submit" id="adminFinishSubmitBtn">Continue to admin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+    (function () {
+        const TOKEN = {{ finish_token | tojson }};
+        const alerts = document.getElementById('admin-finish-alerts');
+        const form = document.getElementById('admin-finish-form');
+        const pw = document.getElementById('adminFinishPassword');
+        const btn = document.getElementById('adminFinishSubmitBtn');
+
+        function showAlert(text, isError) {
+            if (!alerts) return;
+            alerts.innerHTML = '';
+            if (!text) return;
+            const div = document.createElement('div');
+            div.className = isError ? 'alert alert-error' : 'alert alert-success';
+            div.textContent = text;
+            alerts.appendChild(div);
+        }
+
+        async function submit() {
+            if (!pw || !(pw.value || '').trim()) {
+                showAlert('Enter the site password.', true);
+                return;
+            }
+            showAlert('', false);
+            btn.disabled = true;
+            btn.textContent = 'Signing in…';
+            try {
+                const res = await fetch('/api/admin/verify-link', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        token: TOKEN,
+                        password: (pw && pw.value) ? pw.value : '',
+                    }),
+                });
+                const data = await res.json().catch(function () { return {}; });
+                if (res.ok) {
+                    window.location.href = '/admin/products';
+                    return;
+                }
+                const msg = typeof data.detail === 'string'
+                    ? data.detail
+                    : (Array.isArray(data.detail) && data.detail[0] && data.detail[0].msg)
+                        ? data.detail[0].msg
+                        : 'Could not sign in.';
+                showAlert(msg, true);
+            } catch (err) {
+                showAlert(err.message || 'Request failed.', true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Continue to admin';
+            }
+        }
+
+        if (form) form.addEventListener('submit', function (e) { e.preventDefault(); submit(); });
+    })();
+    </script>
+{% endblock %}

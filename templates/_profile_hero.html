@@ -1,0 +1,20 @@
+        <header class="profile-hero">
+            <div class="profile-hero-main">
+                <div class="profile-avatar-ring profile-avatar-ring--compact {% if not profile_has_custom_avatar %}profile-avatar-ring--default{% endif %}">
+                    {% if profile_has_custom_avatar %}
+                    <img src="{{ profile_avatar_url }}" alt="" class="landing-logo__img profile-user-avatar" width="124" height="124" decoding="async">
+                    {% else %}
+                    <img src="/static/person.svg" alt="" class="landing-logo__img profile-user-avatar profile-user-avatar--default" width="124" height="124" decoding="async">
+                    {% endif %}
+                </div>
+                <div class="profile-identity">
+                    <span class="profile-display-name--gradient">{{ profile_username }}</span>
+                    <p class="profile-meta">
+                        {% if profile_joined_month_year %}
+                        <span class="profile-meta__joined">Joined {{ profile_joined_month_year }}</span>
+                        {% endif %}
+                        <span class="profile-meta__favorites">{{ profile_favorite_count }} favorite{% if profile_favorite_count != 1 %}s{% endif %}</span>
+                    </p>
+                </div>
+            </div>
+        </header>

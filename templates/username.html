@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_username }} — Favorites{% endblock %}
+{% block body_attrs %} class="page-scroll page-shop has-site-affiliate-strip"{% endblock %}
+{% block affiliate_strip %}
+    {% include "_affiliate_disclosure_strip.html" %}
+{% endblock %}
+{% block content %}
+<div class="page-wrap page-wrap--profile-v2 page-wrap--profile-favorites">
+    {% include "_profile_v2_hero.html" %}
+
+    <section class="profile-v2-favorites" aria-labelledby="profile-favorites-heading">
+        <h2 class="visually-hidden" id="profile-favorites-heading">Favorites</h2>
+        {% if profile_favorites_hidden_from_public %}
+        <div class="profile-v2-favorites__card profile-v2-favorites__card--hidden-notice" role="status">
+            <p class="shop-empty-state profile-v2-empty profile-v2-empty--favorites-hidden">Favorites hidden</p>
+        </div>
+        {% else %}
+        <div class="profile-v2-favorites__card">
+
+            <div class="profile-v2-favorites__desktop">
+                <div class="profile-v2-favorites__category-panel">
+                    <div
+                        class="profile-v2-favorites__category-row"
+                        id="profile-v2-favorites-category-row"
+                        role="toolbar"
+                        aria-label="Filter favorites by category"
+                    >
+                        <button
+                            type="button"
+                            class="profile-v2-fav-chip profile-v2-fav-filter is-active"
+                            data-profile-cat="all"
+                            id="profile-v2-fav-filter-all"
+                            aria-pressed="true"
+                        ><span class="profile-v2-fav-filter__label">All</span><span class="profile-v2-fav-filter__g"> (</span><span class="profile-v2-fav-filter__num">{{ profile_favorite_count }}</span><img src="/static/heart-filled.svg" alt="" class="profile-v2-fav-filter__heart" width="12" height="12" decoding="async"><span class="profile-v2-fav-filter__g">)</span></button>
+                        {% if nav_categories %}
+                        {% for c in nav_categories %}
+                        <button
+                            type="button"
+                            class="profile-v2-fav-chip profile-v2-fav-filter"
+                            data-profile-cat="{{ c.name }}"
+                            data-profile-slug="{{ c.slug }}"
+                            aria-pressed="false"
+                        ><span class="profile-v2-fav-filter__label">{{ c.name }}</span><span class="profile-v2-fav-filter__g"> (</span><span class="profile-v2-fav-filter__num">{{ (profile_favorite_counts_by_slug|default({}))[c.slug]|default(0) }}</span><img src="/static/heart-filled.svg" alt="" class="profile-v2-fav-filter__heart" width="12" height="12" decoding="async"><span class="profile-v2-fav-filter__g">)</span></button>
+                        {% endfor %}
+                        {% else %}
+                        {% for row in profile_favorite_category_rows %}
+                        <button
+                            type="button"
+                            class="profile-v2-fav-chip profile-v2-fav-filter"
+                            data-profile-cat="{{ row.name }}"
+                            data-profile-slug="{{ row.slug }}"
+                            aria-pressed="false"
+                        ><span class="profile-v2-fav-filter__label">{{ row.name }}</span><span class="profile-v2-fav-filter__g"> (</span><span class="profile-v2-fav-filter__num">{{ row.count }}</span><img src="/static/heart-filled.svg" alt="" class="profile-v2-fav-filter__heart" width="12" height="12" decoding="async"><span class="profile-v2-fav-filter__g">)</span></button>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="profile-v2-favorites__body profile-v2-favorites__body--desktop">
+                    <div id="profile-products-container" class="shop-products-grid profile-products-grid-small profile-v2-products profile-v2-products-host" role="list"></div>
+                </div>
+            </div>
+
+            <div class="profile-v2-favorites__mobile" id="profile-v2-favorites-mobile" aria-label="Favorites by category">
+                <details class="profile-v2-f-acc-item" data-profile-cat="all">
+                    <summary class="profile-v2-f-acc-summary">
+                        <span class="profile-v2-f-acc-summary__main">
+                            <span class="profile-v2-f-acc-summary__label">All favorites</span>
+                            <span class="profile-v2-f-acc-summary__meta">
+                                <span class="profile-v2-f-acc-summary__g">(</span><span class="profile-v2-f-acc-summary__num">{{ profile_favorite_count }}</span><img src="/static/heart-filled.svg" alt="" class="profile-v2-f-acc-summary__heart" width="12" height="12" decoding="async"><span class="profile-v2-f-acc-summary__g">)</span>
+                            </span>
+                        </span>
+                        <span class="profile-v2-f-acc-summary__chev" aria-hidden="true"><svg class="profile-v2-f-acc-summary__chev-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path vector-effect="non-scaling-stroke" d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    </summary>
+                    <div class="profile-v2-f-acc-panel">
+                        <div class="profile-v2-f-acc-grid shop-products-grid profile-v2-products profile-v2-products-host" role="list" data-profile-cat="all"></div>
+                    </div>
+                </details>
+                {% if nav_categories %}
+                {% for c in nav_categories %}
+                <details class="profile-v2-f-acc-item" data-profile-cat="{{ c.name }}">
+                    <summary class="profile-v2-f-acc-summary">
+                        <span class="profile-v2-f-acc-summary__main">
+                            <span class="profile-v2-f-acc-summary__label">{{ c.name }}</span>
+                            <span class="profile-v2-f-acc-summary__meta">
+                                <span class="profile-v2-f-acc-summary__g">(</span><span class="profile-v2-f-acc-summary__num">{{ (profile_favorite_counts_by_slug|default({}))[c.slug]|default(0) }}</span><img src="/static/heart-filled.svg" alt="" class="profile-v2-f-acc-summary__heart" width="12" height="12" decoding="async"><span class="profile-v2-f-acc-summary__g">)</span>
+                            </span>
+                        </span>
+                        <span class="profile-v2-f-acc-summary__chev" aria-hidden="true"><svg class="profile-v2-f-acc-summary__chev-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path vector-effect="non-scaling-stroke" d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    </summary>
+                    <div class="profile-v2-f-acc-panel">
+                        <div class="profile-v2-f-acc-grid shop-products-grid profile-v2-products profile-v2-products-host" role="list" data-profile-cat="{{ c.name }}"></div>
+                    </div>
+                </details>
+                {% endfor %}
+                {% else %}
+                {% for row in profile_favorite_category_rows %}
+                <details class="profile-v2-f-acc-item" data-profile-cat="{{ row.name }}">
+                    <summary class="profile-v2-f-acc-summary">
+                        <span class="profile-v2-f-acc-summary__main">
+                            <span class="profile-v2-f-acc-summary__label">{{ row.name }}</span>
+                            <span class="profile-v2-f-acc-summary__meta">
+                                <span class="profile-v2-f-acc-summary__g">(</span><span class="profile-v2-f-acc-summary__num">{{ row.count }}</span><img src="/static/heart-filled.svg" alt="" class="profile-v2-f-acc-summary__heart" width="12" height="12" decoding="async"><span class="profile-v2-f-acc-summary__g">)</span>
+                            </span>
+                        </span>
+                        <span class="profile-v2-f-acc-summary__chev" aria-hidden="true"><svg class="profile-v2-f-acc-summary__chev-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path vector-effect="non-scaling-stroke" d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    </summary>
+                    <div class="profile-v2-f-acc-panel">
+                        <div class="profile-v2-f-acc-grid shop-products-grid profile-v2-products profile-v2-products-host" role="list" data-profile-cat="{{ row.name }}"></div>
+                    </div>
+                </details>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
+</div>
+<div id="profile-v2-copy-toast" class="profile-v2-copy-toast" role="status" aria-live="polite" hidden>
+    <span class="tabbed-toast__message"></span>
+    <button type="button" class="tabbed-toast__close" aria-label="Dismiss">×</button>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+    <script src="/static/catalog-ui.js"></script>
+    <script>
+        const PROFILE_USERNAME = {{ profile_username | tojson }};
+        const PROFILE_FAVORITES_HIDDEN = {{ profile_favorites_hidden_from_public | tojson }};
+        const UI = TabbedCatalogUI;
+        /* Must match @media (max-width: 1179px) for .profile-v2-favorites__desktop / __mobile in static/styles.css */
+        const PROFILE_MOBILE_MQ = window.matchMedia('(max-width: 1179px)');
+
+        let allProducts = [];
+        const ownerFavoriteIds = new Set();
+        let viewerFavorites = new Set();
+        let activeProfileCat = 'all';
+
+        function profileLayoutIsMobile() {
+            return PROFILE_MOBILE_MQ.matches;
+        }
+
+        function profileMainCategory(p) {
+            return String((p && (p.main_category || p.category)) || '').trim();
+        }
+
+        function syncProfileCategoryBar() {
+            const favorited = allProducts.filter((p) => ownerFavoriteIds.has(Number(p.id)));
+            const total = favorited.length;
+            const byName = {};
+            favorited.forEach((p) => {
+                const m = profileMainCategory(p);
+                if (!m) return;
+                byName[m] = (byName[m] || 0) + 1;
+            });
+            function applyNum(btn, cat) {
+                const numEl = btn.querySelector('.profile-v2-fav-filter__num, .profile-v2-f-acc-summary__num');
+                if (!numEl) return;
+                if (cat === 'all') numEl.textContent = String(total);
+                else numEl.textContent = String(byName[cat] || 0);
+            }
+            const row = document.getElementById('profile-v2-favorites-category-row');
+            if (row) {
+                row.querySelectorAll('.profile-v2-fav-filter[data-profile-cat]').forEach((btn) => {
+                    applyNum(btn, btn.getAttribute('data-profile-cat') || 'all');
+                });
+            }
+            document.querySelectorAll('.profile-v2-f-acc-item[data-profile-cat]').forEach((details) => {
+                const cat = details.getAttribute('data-profile-cat') || 'all';
+                const summ = details.querySelector('.profile-v2-f-acc-summary');
+                if (summ) applyNum(summ, cat);
+            });
+        }
+
+        function setActiveProfileCategoryFilter(value) {
+            activeProfileCat = value || 'all';
+            const row = document.getElementById('profile-v2-favorites-category-row');
+            if (!row) return;
+            row.querySelectorAll('.profile-v2-fav-filter').forEach((btn) => {
+                const cat = btn.getAttribute('data-profile-cat') || 'all';
+                const on = cat === activeProfileCat;
+                btn.classList.toggle('is-active', on);
+                btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            });
+        }
+
+        function initProfileCategoryFilters() {
+            const row = document.getElementById('profile-v2-favorites-category-row');
+            if (!row) return;
+            row.addEventListener('click', function (e) {
+                const btn = e.target.closest('.profile-v2-fav-filter');
+                if (!btn || !row.contains(btn)) return;
+                const cat = btn.getAttribute('data-profile-cat') || 'all';
+                setActiveProfileCategoryFilter(cat);
+                displayProducts();
+            });
+        }
+
+        function favoritedProductsForCategory(favoritedAll, cat) {
+            if (!cat || cat === 'all') return favoritedAll;
+            return favoritedAll.filter((p) => profileMainCategory(p) === cat);
+        }
+
+        function renderCardsIntoContainer(container, products, handlers) {
+            container.innerHTML = '';
+            products.forEach((product) => {
+                container.appendChild(UI.createProductCard(product, handlers));
+            });
+        }
+
+        async function refreshOwnerFavorites() {
+            try {
+                const res = await fetch(`/api/users/${encodeURIComponent(PROFILE_USERNAME)}/favorites`, { cache: 'no-store' });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                ownerFavoriteIds.clear();
+                (Array.isArray(data.ids) ? data.ids : []).forEach((id) => ownerFavoriteIds.add(Number(id)));
+            } catch (e) {
+                ownerFavoriteIds.clear();
+            }
+        }
+
+        async function refreshViewerFavorites() {
+            const getUser = window.TabbedGetContributorCookie;
+            if (typeof getUser !== 'function' || !getUser()) {
+                viewerFavorites = new Set();
+                return;
+            }
+            try {
+                const res = await fetch('/api/favorites', { credentials: 'same-origin', cache: 'no-store' });
+                if (!res.ok) return;
+                const data = await res.json();
+                viewerFavorites = new Set((Array.isArray(data.ids) ? data.ids : []).map(Number));
+            } catch (e) {
+                console.error('Viewer favorites failed:', e);
+            }
+        }
+
+        function displayProducts() {
+            if (PROFILE_FAVORITES_HIDDEN) return;
+            syncProfileCategoryBar();
+
+            const emptyState = document.getElementById('profile-shop-empty-state');
+            const emptyFiltered = document.getElementById('profile-shop-empty-filtered');
+            const container = document.getElementById('profile-products-container');
+
+            const handlers = {
+                isFavorite: (id) => viewerFavorites.has(Number(id)),
+                onToggleFavorite: toggleFavoriteProfile,
+                onOpenDetail: (p) => UI.openProductModal(p, handlers)
+            };
+
+            if (ownerFavoriteIds.size === 0) {
+                if (emptyState) emptyState.hidden = false;
+                if (emptyFiltered) emptyFiltered.hidden = true;
+                if (container) container.innerHTML = '';
+                document.querySelectorAll('.profile-v2-f-acc-grid').forEach((g) => { g.innerHTML = ''; });
+                document.querySelectorAll('.profile-v2-f-acc-empty').forEach((p) => { p.hidden = true; });
+                return;
+            }
+
+            if (emptyState) emptyState.hidden = true;
+
+            const favoritedAll = allProducts.filter((p) => ownerFavoriteIds.has(Number(p.id)));
+
+            if (profileLayoutIsMobile()) {
+                if (emptyFiltered) emptyFiltered.hidden = true;
+                if (container) container.innerHTML = '';
+                document.querySelectorAll('.profile-v2-f-acc-item[data-profile-cat]').forEach((details) => {
+                    const cat = details.getAttribute('data-profile-cat') || 'all';
+                    const grid = details.querySelector('.profile-v2-f-acc-grid[data-profile-cat]');
+                    const panelEmpty = details.querySelector('.profile-v2-f-acc-empty');
+                    const list = favoritedProductsForCategory(favoritedAll, cat);
+                    if (!grid) return;
+                    if (list.length === 0) {
+                        grid.innerHTML = '';
+                        if (panelEmpty) panelEmpty.hidden = false;
+                    } else {
+                        renderCardsIntoContainer(grid, list, handlers);
+                        if (panelEmpty) panelEmpty.hidden = true;
+                    }
+                });
+                return;
+            }
+
+            let favoritedProducts = favoritedProductsForCategory(favoritedAll, activeProfileCat);
+
+            document.querySelectorAll('.profile-v2-f-acc-grid').forEach((g) => { g.innerHTML = ''; });
+            document.querySelectorAll('.profile-v2-f-acc-empty').forEach((p) => { p.hidden = true; });
+
+            if (container) container.innerHTML = '';
+            if (favoritedProducts.length === 0) {
+                const hasResolvedFavorites = favoritedAll.length > 0;
+                const filterNarrowed =
+                    activeProfileCat && activeProfileCat !== 'all' && hasResolvedFavorites;
+                if (filterNarrowed && emptyFiltered) {
+                    if (emptyState) emptyState.hidden = true;
+                    emptyFiltered.hidden = false;
+                } else {
+                    if (emptyState) emptyState.hidden = false;
+                    if (emptyFiltered) emptyFiltered.hidden = true;
+                }
+                return;
+            }
+            if (emptyFiltered) emptyFiltered.hidden = true;
+
+            renderCardsIntoContainer(container, favoritedProducts, handlers);
+        }
+
+        async function toggleFavoriteProfile(productId) {
+            const getUser = window.TabbedGetContributorCookie;
+            if (typeof getUser === 'function' && !getUser()) {
+                if (typeof window.TabbedOpenLoginModal === 'function') window.TabbedOpenLoginModal();
+                return;
+            }
+            const id = Number(productId);
+            const was = viewerFavorites.has(id);
+            const favorited = !was;
+            if (favorited) viewerFavorites.add(id);
+            else viewerFavorites.delete(id);
+            displayProducts();
+            try {
+                const res = await fetch('/api/favorites', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ product_id: id, favorited }),
+                });
+                if (!res.ok) throw new Error(String(res.status));
+                await refreshViewerFavorites();
+                if (getUser() === PROFILE_USERNAME) await refreshOwnerFavorites();
+                displayProducts();
+            } catch (e) {
+                if (favorited) viewerFavorites.delete(id);
+                else viewerFavorites.add(id);
+                displayProducts();
+                console.error('Favorite update failed:', e);
+            }
+        }
+
+        async function initProfile() {
+            if (PROFILE_FAVORITES_HIDDEN) {
+                return;
+            }
+            try {
+                const catalogRes = await fetch('/api/products', { cache: 'no-store' });
+                if (catalogRes.ok) {
+                    const catalogData = await catalogRes.json();
+                    allProducts = Array.isArray(catalogData.products) ? catalogData.products : [];
+                    UI.primeTagColorsFromProducts(allProducts);
+                }
+            } catch (e) {
+                console.error('Load failed:', e);
+            }
+
+            await refreshOwnerFavorites();
+            await refreshViewerFavorites();
+            displayProducts();
+        }
+
+        function tabbedFallbackCopyText(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+            } catch (e) {
+                /* ignore */
+            }
+            document.body.removeChild(ta);
+        }
+
+        function initProfileShareLink() {
+            const toastEl = document.getElementById('profile-v2-copy-toast');
+            const rowBtn = document.getElementById('profile-v2-copy-link');
+            let hideTimer;
+            const toastMsg = toastEl ? toastEl.querySelector('.tabbed-toast__message') : null;
+            const toastClose = toastEl ? toastEl.querySelector('.tabbed-toast__close') : null;
+
+            function hideCopiedToast() {
+                if (!toastEl) return;
+                if (toastMsg) toastMsg.textContent = '';
+                toastEl.hidden = true;
+                window.clearTimeout(hideTimer);
+            }
+
+            function showCopiedToast() {
+                if (!toastEl) return;
+                if (toastMsg) toastMsg.textContent = 'Link copied to clipboard';
+                toastEl.hidden = false;
+                window.clearTimeout(hideTimer);
+                hideTimer = window.setTimeout(hideCopiedToast, 3000);
+            }
+
+            if (toastClose) toastClose.addEventListener('click', hideCopiedToast);
+
+            function copyUrl() {
+                const url = String(window.location.href || '');
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(url).then(showCopiedToast).catch(function () {
+                        tabbedFallbackCopyText(url);
+                        showCopiedToast();
+                    });
+                } else {
+                    tabbedFallbackCopyText(url);
+                    showCopiedToast();
+                }
+            }
+
+            if (rowBtn) {
+                rowBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    copyUrl();
+                });
+            }
+        }
+
+        initProfileCategoryFilters();
+        initProfileShareLink();
+        initProfile();
+
+        function onProfileLayoutMq() {
+            if (!PROFILE_FAVORITES_HIDDEN) displayProducts();
+        }
+        if (typeof PROFILE_MOBILE_MQ.addEventListener === 'function') {
+            PROFILE_MOBILE_MQ.addEventListener('change', onProfileLayoutMq);
+        } else if (typeof PROFILE_MOBILE_MQ.addListener === 'function') {
+            PROFILE_MOBILE_MQ.addListener(onProfileLayoutMq);
+        }
+    </script>
+{% endblock %}

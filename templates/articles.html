@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ articles_page_title | default('Articles') }}{% endblock %}
+{% block body_attrs %} class="page-scroll"{% endblock %}
+{% block content %}
+    <div class="page-wrap">
+        <div class="page-title">{{ articles_heading | default('Articles') }}</div>
+        <p class="page-lead page-lead--spaced">{{ articles_lead | default('Published articles from the community. Submit new pieces for review from the Contribute page.') }}</p>
+        <div id="articles-list"></div>
+    </div>
+    <script>
+        async function loadArticles() {
+            const el = document.getElementById('articles-list');
+            try {
+                const res = await fetch('/api/articles');
+                const data = await res.json();
+                const items = data.articles || [];
+                if (items.length === 0) {
+                    el.innerHTML = '<p class="page-lead page-lead--flush">No published articles yet.</p>';
+                    return;
+                }
+                el.innerHTML = items.map(a => `
+                    <article class="article-card">
+                        <h3>${escapeHtml(a.title)}</h3>
+                        ${renderArticleDescription(a.description)}
+                        ${a.created_at ? `<div class="article-meta">${escapeHtml(a.created_at.slice(0, 10))}</div>` : ''}
+                    </article>
+                `).join('');
+            } catch (e) {
+                el.innerHTML = '<p class="page-lead page-lead--flush page-lead--error">Could not load articles.</p>';
+            }
+        }
+        function escapeHtml(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+        function isAllowedYoutubeEmbedSrc(src) {
+            const s = (src || '').trim();
+            return /^https:\/\/(www\.)?youtube\.com\/embed\/[a-zA-Z0-9_-]{11}([\?#][^\s'\"]*)?$/i.test(s)
+                || /^https:\/\/(www\.)?youtube-nocookie\.com\/embed\/[a-zA-Z0-9_-]{11}([\?#][^\s'\"]*)?$/i.test(s);
+        }
+        function sanitizeArticleBodyHtml(html) {
+            const t = document.createElement('template');
+            t.innerHTML = html.trim();
+            t.content.querySelectorAll('script,style,object,embed,link,meta').forEach(n => n.remove());
+            t.content.querySelectorAll('iframe').forEach(ifr => {
+                if (!isAllowedYoutubeEmbedSrc(ifr.getAttribute('src'))) {
+                    ifr.remove();
+                } else {
+                    [...ifr.attributes].forEach(attr => {
+                        const n = attr.name.toLowerCase();
+                        if (n.startsWith('on') || n === 'srcdoc') ifr.removeAttribute(attr.name);
+                    });
+                }
+            });
+            t.content.querySelectorAll('.article-youtube-embed').forEach(wrap => {
+                if (!wrap.querySelector('iframe')) wrap.remove();
+            });
+            t.content.querySelectorAll('*').forEach(el => {
+                if (el.tagName === 'IFRAME') return;
+                [...el.attributes].forEach(attr => {
+                    const n = attr.name.toLowerCase();
+                    if (n.startsWith('on') || n === 'srcdoc') el.removeAttribute(attr.name);
+                });
+            });
+            t.content.querySelectorAll('a').forEach(a => {
+                const h = (a.getAttribute('href') || '').trim();
+                if (/^javascript:/i.test(h) || /^data:/i.test(h) || h.toLowerCase().startsWith('vbscript:')) {
+                    a.removeAttribute('href');
+                }
+            });
+            return t.innerHTML;
+        }
+        function renderArticleDescription(raw) {
+            if (raw == null || !String(raw).trim()) return '';
+            const s = String(raw).trim();
+            if (!/<[a-z][\s\S]*>/i.test(s)) {
+                return `<p>${escapeHtml(s)}</p>`;
+            }
+            return `<div class="article-body-html">${sanitizeArticleBodyHtml(s)}</div>`;
+        }
+        loadArticles();
+    </script>
+{% endblock %}

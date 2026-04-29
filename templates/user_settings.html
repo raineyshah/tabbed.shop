@@ -1,0 +1,432 @@
+{% extends "user_account_base.html" %}
+{% block body_attrs %} class="page-scroll page-shop"{% endblock %}
+{% block affiliate_strip %}{% endblock %}
+{% block title %}{{ profile_username }} — Settings{% endblock %}
+{% block user_account_body %}
+{% include "_profile_settings_section.html" %}
+{% endblock %}
+
+{% block user_account_modals %}
+{{ super() }}
+<div class="login-modal-backdrop" id="change-email-modal-backdrop" hidden aria-hidden="true">
+    <div class="contribute-modal login-modal-shell" role="dialog" aria-modal="true" aria-labelledby="change-email-modal-title" id="change-email-modal-dialog" tabindex="-1">
+        <div class="contribute-modal-header">
+            <span class="contribute-modal-title" id="change-email-modal-title">Change email</span>
+            <button type="button" class="contribute-modal-close" id="change-email-modal-close" aria-label="Close">✕</button>
+        </div>
+        <div class="contribute-modal-body">
+            <p class="login-modal-lead" id="change-email-modal-lead">Enter your new email. We’ll send a 6-character code to verify it.</p>
+
+            <form class="login-modal-form" id="change-email-modal-form" novalidate autocomplete="on">
+                <div class="form-group">
+                    <label for="change-email-modal-email">New email</label>
+                    <input type="email" id="change-email-modal-email" name="email" required autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="you@example.com">
+                </div>
+                <p class="login-modal-status" id="change-email-modal-email-status" role="status" hidden></p>
+                <div class="login-modal-actions">
+                    <button type="submit" class="login-modal-submit" id="change-email-modal-email-submit">Send verification code</button>
+                </div>
+            </form>
+
+            <div class="login-modal-after-send" id="change-email-modal-after-send" hidden>
+                <form class="login-modal-form" id="change-email-modal-code-form" novalidate>
+                    <div class="form-group">
+                        <label for="change-email-modal-code">Code from email</label>
+                        <input type="text" id="change-email-modal-code" name="one-time-code" required maxlength="6" minlength="6" autocomplete="one-time-code" inputmode="text" spellcheck="false" autocapitalize="characters" class="login-modal-code-input" aria-describedby="change-email-modal-code-hint">
+                    </div>
+                    <p class="login-modal-hint" id="change-email-modal-code-hint">Six letters or numbers, as shown in the message.</p>
+                    <p class="login-modal-status" id="change-email-modal-code-status" role="status" hidden></p>
+                    <div class="login-modal-actions">
+                        <button type="submit" class="login-modal-submit" id="change-email-modal-code-submit">Confirm new email</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="login-modal-backdrop" id="change-username-modal-backdrop" hidden aria-hidden="true">
+    <div class="contribute-modal login-modal-shell" role="dialog" aria-modal="true" aria-labelledby="change-username-modal-title" id="change-username-modal-dialog" tabindex="-1">
+        <div class="contribute-modal-header">
+            <span class="contribute-modal-title" id="change-username-modal-title">Change username</span>
+            <button type="button" class="contribute-modal-close" id="change-username-modal-close" aria-label="Close">✕</button>
+        </div>
+        <div class="contribute-modal-body">
+            <p class="login-modal-lead" id="change-username-modal-lead">Choose a new public username. Your profile link will update.</p>
+            <form class="login-modal-form" id="change-username-modal-form" novalidate autocomplete="off">
+                <div class="form-group">
+                    <label for="change-username-modal-username">Username</label>
+                    <input type="text" id="change-username-modal-username" name="username" required maxlength="30" minlength="3" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="your_name">
+                </div>
+                <p class="login-modal-hint" id="change-username-modal-username-hint">3–30 characters: start with a letter; then letters, numbers, or underscores. Lowercase only.</p>
+                <p class="login-modal-status" id="change-username-modal-username-status" role="status" hidden></p>
+                <div class="login-modal-actions">
+                    <button type="submit" class="login-modal-submit" id="change-username-modal-username-submit">Save username</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block user_account_scripts %}
+    <script>
+        const PROFILE_USERNAME = {{ profile_username | tojson }};
+
+        const SETTINGS_KEY = 'profile_settings';
+        const settingDefaults = {
+            'favorites-visible': 'yes',
+            'articles-visible-profile': 'yes',
+            'articles-visible-feed': 'yes',
+        };
+
+        function loadSettings() {
+            try {
+                return Object.assign({}, settingDefaults, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'));
+            } catch (e) { return Object.assign({}, settingDefaults); }
+        }
+
+        function saveSetting(key, value) {
+            const s = loadSettings();
+            s[key] = value;
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+        }
+
+        function applySettings(settings) {
+            document.querySelectorAll('.profile-setting-btn[data-setting]').forEach(btn => {
+                const key = btn.dataset.setting;
+                if (!key) return;
+                btn.classList.toggle('is-active', settings[key] === btn.dataset.value);
+            });
+        }
+
+        function showSettingsToast(message) {
+            const el = document.getElementById('tabbed-global-toast');
+            if (!el) return;
+            const msg = el.querySelector('.tabbed-toast__message');
+            if (msg) msg.textContent = message;
+            el.hidden = false;
+            window.clearTimeout(window.__tabbedGlobalToastTimer);
+            window.__tabbedGlobalToastTimer = window.setTimeout(function () {
+                if (typeof window.tabbedHideGlobalToast === 'function') {
+                    window.tabbedHideGlobalToast();
+                }
+            }, 3500);
+        }
+
+        function initSettings() {
+            applySettings(loadSettings());
+
+            async function persistSettingsToServer() {
+                const settings = loadSettings();
+                try {
+                    const res = await fetch(`/api/settings?username=${encodeURIComponent(PROFILE_USERNAME)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(settings),
+                    });
+                    if (!res.ok) showSettingsToast('Couldn\'t save settings');
+                } catch {
+                    showSettingsToast('Couldn\'t save settings');
+                }
+            }
+
+            document.querySelectorAll('.profile-setting-btn[data-setting]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const key = btn.dataset.setting;
+                    if (!key) return;
+                    saveSetting(key, btn.dataset.value);
+                    applySettings(loadSettings());
+                    persistSettingsToServer();
+                });
+            });
+
+            fetch(`/api/settings?username=${encodeURIComponent(PROFILE_USERNAME)}`)
+                .then(r => r.ok ? r.json() : null)
+                .then(data => {
+                    if (data && data.settings) {
+                        Object.entries(data.settings).forEach(([k, v]) => saveSetting(k, v));
+                        applySettings(loadSettings());
+                    }
+                })
+                .catch(() => {});
+        }
+
+        initSettings();
+
+        const logoutBtn = document.getElementById('profile-settings-logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                try {
+                    sessionStorage.setItem('tabbed_logout_toast', PROFILE_USERNAME);
+                } catch (e) {}
+                document.cookie = 'tabbed_contributor_username=; path=/; max-age=0';
+                window.location.href = '/logout';
+            });
+        }
+
+        (function initChangeEmailModal() {
+            const backdrop = document.getElementById('change-email-modal-backdrop');
+            const dialog = document.getElementById('change-email-modal-dialog');
+            const openBtn = document.getElementById('profile-change-email-btn');
+            const closeBtn = document.getElementById('change-email-modal-close');
+            const lead = document.getElementById('change-email-modal-lead');
+            const LEAD_INITIAL = 'Enter your new email. We’ll send a 6-character code to verify it.';
+            const LEAD_SENT = 'Check your new inbox (and junk folder) for your 6-character verification code.';
+            const emailForm = document.getElementById('change-email-modal-form');
+            const emailInput = document.getElementById('change-email-modal-email');
+            const emailStatus = document.getElementById('change-email-modal-email-status');
+            const emailSubmit = document.getElementById('change-email-modal-email-submit');
+            const afterSend = document.getElementById('change-email-modal-after-send');
+            const codeForm = document.getElementById('change-email-modal-code-form');
+            const codeInput = document.getElementById('change-email-modal-code');
+            const codeStatus = document.getElementById('change-email-modal-code-status');
+            const codeSubmit = document.getElementById('change-email-modal-code-submit');
+            const emailDisplay = document.getElementById('profile-settings-email-display');
+            let pendingNewEmail = '';
+
+            function formatApiError(data) {
+                const d = data && data.detail;
+                if (typeof d === 'string') return d;
+                if (Array.isArray(d) && d[0] && d[0].msg) return d[0].msg;
+                return 'Something went wrong.';
+            }
+            function showStatus(el, text, isError) {
+                if (!el) return;
+                el.hidden = !text;
+                el.textContent = text || '';
+                el.classList.toggle('login-modal-status--error', !!isError);
+                el.classList.toggle('login-modal-status--ok', !!text && !isError);
+            }
+
+            function resetModal() {
+                pendingNewEmail = '';
+                if (lead) { lead.hidden = false; lead.textContent = LEAD_INITIAL; }
+                if (emailForm) emailForm.hidden = false;
+                if (afterSend) afterSend.hidden = true;
+                if (emailInput) emailInput.value = '';
+                if (codeInput) codeInput.value = '';
+                showStatus(emailStatus, '', false);
+                showStatus(codeStatus, '', false);
+            }
+
+            function openModal() {
+                if (!backdrop) return;
+                resetModal();
+                backdrop.removeAttribute('hidden');
+                backdrop.setAttribute('aria-hidden', 'false');
+                if (emailInput) emailInput.focus();
+            }
+
+            function closeModal() {
+                if (!backdrop || backdrop.hidden) return;
+                backdrop.setAttribute('hidden', '');
+                backdrop.setAttribute('aria-hidden', 'true');
+                resetModal();
+            }
+
+            if (openBtn && backdrop) openBtn.addEventListener('click', openModal);
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (backdrop) {
+                backdrop.addEventListener('click', (e) => {
+                    if (e.target === backdrop) closeModal();
+                });
+            }
+            if (dialog) {
+                dialog.addEventListener('click', (e) => e.stopPropagation());
+            }
+
+            if (emailForm && emailInput && emailSubmit) {
+                emailForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    showStatus(emailStatus, '', false);
+                    const email = (emailInput.value || '').trim();
+                    if (!email) {
+                        showStatus(emailStatus, 'Please enter an email.', true);
+                        return;
+                    }
+                    emailSubmit.disabled = true;
+                    try {
+                        const res = await fetch('/api/auth/request-email-change', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({ new_email: email }),
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) {
+                            showStatus(emailStatus, formatApiError(data), true);
+                            emailSubmit.disabled = false;
+                            return;
+                        }
+                        pendingNewEmail = email;
+                        if (lead) lead.textContent = LEAD_SENT;
+                        if (emailForm) emailForm.hidden = true;
+                        if (afterSend) afterSend.hidden = false;
+                        if (codeInput) codeInput.focus();
+                    } catch {
+                        showStatus(emailStatus, 'Network error. Try again.', true);
+                    } finally {
+                        emailSubmit.disabled = false;
+                    }
+                });
+            }
+
+            if (codeInput) {
+                codeInput.addEventListener('input', () => {
+                    const u = (codeInput.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    if (u !== codeInput.value) codeInput.value = u;
+                });
+            }
+
+            if (codeForm && codeInput && codeSubmit) {
+                codeForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    showStatus(codeStatus, '', false);
+                    const email = (pendingNewEmail || '').trim();
+                    const code = (codeInput.value || '').trim().toUpperCase();
+                    if (!email) {
+                        showStatus(codeStatus, 'Request a code first with your new email.', true);
+                        return;
+                    }
+                    if (code.length !== 6) {
+                        showStatus(codeStatus, 'Enter the full 6-character code.', true);
+                        return;
+                    }
+                    codeSubmit.disabled = true;
+                    try {
+                        const res = await fetch('/api/auth/confirm-email-change', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({ new_email: email, code }),
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) {
+                            showStatus(codeStatus, formatApiError(data), true);
+                            codeSubmit.disabled = false;
+                            return;
+                        }
+                        if (emailDisplay && data.email) emailDisplay.textContent = data.email;
+                        closeModal();
+                    } catch {
+                        showStatus(codeStatus, 'Network error. Try again.', true);
+                    } finally {
+                        codeSubmit.disabled = false;
+                    }
+                });
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key !== 'Escape' || !backdrop || backdrop.hidden) return;
+                closeModal();
+            });
+        })();
+
+        (function initChangeUsernameModal() {
+            const backdrop = document.getElementById('change-username-modal-backdrop');
+            const dialog = document.getElementById('change-username-modal-dialog');
+            const openBtn = document.getElementById('profile-change-username-btn');
+            const closeBtn = document.getElementById('change-username-modal-close');
+            const form = document.getElementById('change-username-modal-form');
+            const usernameInput = document.getElementById('change-username-modal-username');
+            const statusEl = document.getElementById('change-username-modal-username-status');
+            const submitBtn = document.getElementById('change-username-modal-username-submit');
+
+            function formatApiError(data) {
+                const d = data && data.detail;
+                if (typeof d === 'string') return d;
+                if (Array.isArray(d) && d[0] && d[0].msg) return d[0].msg;
+                return 'Something went wrong.';
+            }
+            function showStatus(text, isError) {
+                if (!statusEl) return;
+                statusEl.hidden = !text;
+                statusEl.textContent = text || '';
+                statusEl.classList.toggle('login-modal-status--error', !!isError);
+                statusEl.classList.toggle('login-modal-status--ok', !!text && !isError);
+            }
+
+            function resetModal() {
+                showStatus('', false);
+                if (usernameInput) usernameInput.value = PROFILE_USERNAME;
+            }
+
+            function openModal() {
+                if (!backdrop) return;
+                resetModal();
+                backdrop.removeAttribute('hidden');
+                backdrop.setAttribute('aria-hidden', 'false');
+                queueMicrotask(() => {
+                    if (usernameInput) {
+                        usernameInput.focus();
+                        usernameInput.select();
+                    }
+                });
+            }
+
+            function closeModal() {
+                if (!backdrop || backdrop.hidden) return;
+                backdrop.setAttribute('hidden', '');
+                backdrop.setAttribute('aria-hidden', 'true');
+                resetModal();
+            }
+
+            if (openBtn && backdrop) openBtn.addEventListener('click', openModal);
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (backdrop) {
+                backdrop.addEventListener('click', (e) => {
+                    if (e.target === backdrop) closeModal();
+                });
+            }
+            if (dialog) {
+                dialog.addEventListener('click', (e) => e.stopPropagation());
+            }
+
+            if (usernameInput) {
+                usernameInput.addEventListener('input', () => {
+                    const raw = (usernameInput.value || '').toLowerCase().replace(/[^a-z0-9_]/g, '');
+                    const m = raw.match(/[a-z][a-z0-9_]*/);
+                    usernameInput.value = m ? m[0].slice(0, 30) : '';
+                });
+            }
+
+            if (form && usernameInput && submitBtn) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    showStatus('', false);
+                    const username = (usernameInput.value || '').trim().toLowerCase();
+                    if (username.length < 3) {
+                        showStatus('Username must be at least 3 characters.', true);
+                        return;
+                    }
+                    submitBtn.disabled = true;
+                    try {
+                        const res = await fetch('/api/me/username', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({ username }),
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) {
+                            showStatus(formatApiError(data), true);
+                            return;
+                        }
+                        const u = data.username || username;
+                        window.location.href = '/user/' + encodeURIComponent(u) + '/settings';
+                    } catch {
+                        showStatus('Network error. Try again.', true);
+                    } finally {
+                        submitBtn.disabled = false;
+                    }
+                });
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key !== 'Escape' || !backdrop || backdrop.hidden) return;
+                closeModal();
+            });
+        })();
+    </script>
+{% endblock %}

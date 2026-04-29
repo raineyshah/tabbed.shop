@@ -21,7 +21,6 @@ node_modules/
 
 # Content dirs (do not track)
 products/
-templates/
 uploads/
 brands/
 certifications/
