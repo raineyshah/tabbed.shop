@@ -12,7 +12,6 @@ from sqlalchemy import (
     ForeignKey,
     UniqueConstraint,
     Table,
-    event,
 )
 from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
@@ -22,67 +21,16 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
 
+DATABASE_URL = (os.environ.get("TABBED_DATABASE_URL") or "").strip()
+if not DATABASE_URL:
+    raise RuntimeError("TABBED_DATABASE_URL is not set. Configure it in your .env file.")
 
-def _default_local_sqlite_path() -> Path:
-    """Filesystem path for the default **development** SQLite file (only used when no DB URL is set).
-
-    ``TABBED_SQLITE_PATH`` overrides. Otherwise: ``tabbed.db`` if it exists, else ``products.db`` if it
-    exists, else ``tabbed.db`` (new).
-    """
-    override = (os.environ.get("TABBED_SQLITE_PATH") or "").strip()
-    if override:
-        return Path(override).expanduser().resolve()
-    tabbed = (BASE_DIR / "tabbed.db").resolve()
-    legacy = (BASE_DIR / "products.db").resolve()
-    if tabbed.exists():
-        return tabbed
-    if legacy.exists():
-        return legacy
-    return tabbed
-
-
-def _default_local_sqlite_url() -> str:
-    return f"sqlite:///{_default_local_sqlite_path()}"
-
-
-def resolve_database_url() -> str:
-    """SQLAlchemy URL for the app.
-
-    **Production / staging (PostgreSQL):** set ``TABBED_DATABASE_URL``, for example::
-
-        postgresql+psycopg2://USER:PASS@HOST:5432/DBNAME?sslmode=require
-
-    **Local development:** leave ``TABBED_DATABASE_URL`` unset to use a SQLite file; see
-    ``_default_local_sqlite_path`` and ``TABBED_SQLITE_PATH``.
-    """
-    url = (os.environ.get("TABBED_DATABASE_URL") or "").strip()
-    if url:
-        return url
-    return _default_local_sqlite_url()
-
-
-DATABASE_URL = resolve_database_url()
-
-_engine_kwargs: dict = {}
-if DATABASE_URL.startswith("sqlite:"):
-    _engine_kwargs["connect_args"] = {"check_same_thread": False, "timeout": 30}
-else:
-    # PostgreSQL: recover from idle disconnects; tune pool for your host
-    _engine_kwargs["pool_pre_ping"] = True
-    _engine_kwargs["pool_size"] = int(os.environ.get("TABBED_DB_POOL_SIZE") or "5")
-    _engine_kwargs["max_overflow"] = int(os.environ.get("TABBED_DB_MAX_OVERFLOW") or "10")
-
-engine = create_engine(DATABASE_URL, **_engine_kwargs)
-
-
-@event.listens_for(engine, "connect")
-def _on_engine_connect(dbapi_connection, _connection_record):
-    """SQLite only: enforce foreign keys (not on by default). PostgreSQL: no-op."""
-    if engine.dialect.name != "sqlite":
-        return
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_size=int(os.environ.get("TABBED_DB_POOL_SIZE") or "5"),
+    max_overflow=int(os.environ.get("TABBED_DB_MAX_OVERFLOW") or "10"),
+)
 
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

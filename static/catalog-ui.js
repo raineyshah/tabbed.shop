@@ -629,10 +629,11 @@
 
         const middleSection = document.createElement('div');
         middleSection.className = 'product-image-section';
-        const imageSrc = product.product_image_filename
-            ? `/uploads/${product.product_image_filename}`
-            : '/static/haws.jpg';
-        middleSection.innerHTML = `<img src="${imageSrc}" alt="${nameEsc}" class="product-image" onerror="this.src='/static/haws.jpg'">`;
+        const imageSrc = product.product_image_url
+            || (product.product_image_filename ? `/uploads/${product.product_image_filename}` : null);
+        middleSection.innerHTML = imageSrc
+            ? `<img src="${imageSrc}" alt="${nameEsc}" class="product-image" onerror="this.onerror=null;this.style.display='none'">`
+            : `<div class="product-image product-image--placeholder"></div>`;
 
         const bottomSection = document.createElement('div');
         bottomSection.className = 'product-bottom-section';
@@ -780,19 +781,25 @@
         const modalBody = document.createElement('div');
         modalBody.className = 'modal-body';
 
-        const imageSrc = product.product_image_filename
-            ? `/uploads/${product.product_image_filename}`
-            : '/static/haws.jpg';
+        const imageSrc = product.product_image_url
+            || (product.product_image_filename ? `/uploads/${product.product_image_filename}` : null);
         const imageCol = document.createElement('div');
         imageCol.className = 'modal-image-col';
-        const img = document.createElement('img');
-        img.className = 'modal-image';
-        img.src = imageSrc;
-        img.alt = product.name || '';
-        img.addEventListener('error', function () {
-            this.src = '/static/haws.jpg';
-        });
-        imageCol.appendChild(img);
+        if (imageSrc) {
+            const img = document.createElement('img');
+            img.className = 'modal-image';
+            img.src = imageSrc;
+            img.alt = product.name || '';
+            img.addEventListener('error', function () {
+                this.onerror = null;
+                this.style.display = 'none';
+            });
+            imageCol.appendChild(img);
+        } else {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'modal-image modal-image--placeholder';
+            imageCol.appendChild(placeholder);
+        }
 
         const details = document.createElement('div');
         details.className = 'modal-details-col';
@@ -1022,9 +1029,8 @@
         overlay.id = 'product-modal-overlay';
         overlay.className = 'modal-overlay';
 
-        const imageSrc = product.product_image_filename
-            ? `/uploads/${product.product_image_filename}`
-            : '/static/haws.jpg';
+        const imageSrc = product.product_image_url
+            || (product.product_image_filename ? `/uploads/${product.product_image_filename}` : null);
 
         const certLinesHtml =
             (product.certifications || []).length > 0
@@ -1113,11 +1119,13 @@
         const productLinkRaw = String(product.product_link || '').trim();
         const productLinkEsc = escapeHtml(productLinkRaw);
         const imageSrcEsc = escapeHtml(imageSrc);
-        const modalImageBlock = productLinkRaw
-            ? '<a href="' + productLinkEsc + '" class="modal-image-link" target="_blank" rel="noopener noreferrer" aria-label="Open product page (new tab)">' +
-            '<img src="' + imageSrcEsc + '" alt="' + escapeHtml(product.name) + '" class="modal-image" onerror="this.src=\'/static/haws.jpg\'">' +
-            '</a>'
-            : '<img src="' + imageSrcEsc + '" alt="' + escapeHtml(product.name) + '" class="modal-image" onerror="this.src=\'/static/haws.jpg\'">';
+        const modalImageBlock = imageSrc
+            ? (productLinkRaw
+                ? '<a href="' + productLinkEsc + '" class="modal-image-link" target="_blank" rel="noopener noreferrer" aria-label="Open product page (new tab)">' +
+                  '<img src="' + imageSrcEsc + '" alt="' + escapeHtml(product.name) + '" class="modal-image" onerror="this.onerror=null;this.style.display=\'none\'">' +
+                  '</a>'
+                : '<img src="' + imageSrcEsc + '" alt="' + escapeHtml(product.name) + '" class="modal-image" onerror="this.onerror=null;this.style.display=\'none\'">')
+            : '<div class="modal-image modal-image--placeholder"></div>';
         const modalBuyHtml = product.product_link
             ? `<a href="${productLinkEsc}" target="_blank" rel="noopener noreferrer" class="${modalBuyClass}">${modalBuyInner}</a>`
             : `<button type="button" class="${modalBuyClass}">${modalBuyInner}</button>`;

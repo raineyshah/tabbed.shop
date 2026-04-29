@@ -2053,6 +2053,7 @@ def _product_api_dict(product: Product, db: Optional[Session] = None) -> dict:
         "attributes": _coerce_str_list(getattr(product, "attributes", None)),
         "certifications": _certifications_payload(product),
         "product_image_filename": product.product_image_filename,
+        "product_image_url": f"/api/products/{product.id}/image" if product.product_image else None,
         "brand_image_filename": None,
         "brand_image_url": brand_img_url,
         "description": product.description or "",
@@ -3352,12 +3353,11 @@ async def admin_add_product(request: Request, db: Session = Depends(get_db)):
 
         product_image = form.get("product_image")
         brand_image = form.get("brand_image")
-        product_image_data = None
-        product_image_filename = None
-        if product_image is not None and getattr(product_image, "filename", None):
-            product_image_data, product_image_filename = _save_normalized_upload(
-                upload=product_image, prefix="product", label=product_name
-            )
+        if product_image is None or not getattr(product_image, "filename", None):
+            raise HTTPException(status_code=400, detail="Product image is required.")
+        product_image_data, product_image_filename = _save_normalized_upload(
+            upload=product_image, prefix="product", label=product_name
+        )
 
         brand_row = _admin_resolve_brand(db, brand_name, brand_image)
         product = _add_product(
@@ -3645,6 +3645,15 @@ async def get_made_in(db: Session = Depends(get_db)):
     """Get unique countries from products."""
     countries = db.query(Product.made_in).distinct().all()
     return {"made_in": [c[0] for c in countries if c[0]]}
+
+
+@app.get("/api/products/{product_id}/image")
+async def api_public_product_image(product_id: int, db: Session = Depends(get_db)):
+    row = db.query(Product).filter(Product.id == product_id).first()
+    if not row or not row.product_image:
+        raise HTTPException(status_code=404, detail="Not found")
+    mt = _blob_image_media_type(row.product_image)
+    return Response(content=row.product_image, media_type=mt)
 
 
 @app.get("/api/brands/{brand_id}/image")

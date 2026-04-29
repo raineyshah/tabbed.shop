@@ -12,7 +12,8 @@
                 "VIRTUAL_ENV": "${workspaceFolder}/.venv",
                 "PATH": "${workspaceFolder}/.venv/bin:${env:PATH}"
             },
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Open SSH tunnel to VM postgres"
         }
     ]
 }

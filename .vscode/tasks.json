@@ -1,0 +1,16 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Open SSH tunnel to VM postgres",
+            "type": "shell",
+            "command": "ssh -N -L 5433:127.0.0.1:5432 tabbed",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "dedicated"
+            }
+        }
+    ]
+}
